@@ -23,11 +23,7 @@ const formSchema = z
 				/^(?=.*[A-Z])/,
 				"Your password must have at least one uppercase letter.",
 			)
-			.regex(/^(?=.*[0-9])/, "Your password must have at least one number.")
-			.regex(
-				/^(?=.*[!@#$%^&*])/,
-				"Your password must have at least one special character.",
-			),
+			.regex(/^(?=.*[0-9])/, "Your password must have at least one number."),
 		confirmPassword: z.string().min(8, "Please enter at least 8 characters."),
 	})
 	.refine((data) => data.password === data.confirmPassword, {
