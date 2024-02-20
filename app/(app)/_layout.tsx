@@ -1,8 +1,11 @@
 import { Tabs } from "expo-router";
 import {
 	CalendarFold,
+	CircleUserRound,
+	LineChart,
 	MessageCircleQuestion,
 	Settings,
+	TrendingUp,
 } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 import React from "react";
@@ -20,6 +23,7 @@ export default function AppLayout() {
 					backgroundColor:
 						colorScheme === "dark" ? "hsl(240, 10%, 3.9%)" : "hsl(0, 0%, 100%)",
 				},
+				tabBarShowLabel: false
 			}}
 		>
 			<Tabs.Screen
@@ -28,6 +32,15 @@ export default function AppLayout() {
 					title: "Dashboard",
 					tabBarIcon({ color, size }) {
 						return <CalendarFold color={color} size={size} />;
+					},
+				}}
+			/>
+			<Tabs.Screen
+				name="three"
+				options={{
+					title: "Stats",
+					tabBarIcon({ color, size }) {
+						return <LineChart color={color} size={size} />;
 					},
 				}}
 			/>
@@ -43,9 +56,9 @@ export default function AppLayout() {
 			<Tabs.Screen
 				name="two"
 				options={{
-					title: "Settings",
+					title: "Profile",
 					tabBarIcon({ color, size }) {
-						return <Settings color={color} size={size} />;
+						return <CircleUserRound color={color} size={size} />;
 					},
 				}}
 			/>
