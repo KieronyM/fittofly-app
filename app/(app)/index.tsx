@@ -1,10 +1,9 @@
 import { addDays } from "date-fns";
 import * as Calendar from "expo-calendar";
 import React, { useEffect, useState } from "react";
-import { FlatList, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import { Feed } from "@/components/feed";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import {
 	Accordion,
 	AccordionContent,
@@ -18,78 +17,107 @@ import {
 	calculateDutyPeriod,
 	formatDutyPeriods,
 } from "@/services/duty-periods";
+import { LucideIcon } from "lucide-react-native";
+import { processRoster } from "@/services/process-roster";
 
 type TEvent = {
 	startDate: Date;
 	endDate: Date;
+	dutyPeriodID: number;
+	dateString: string;
+	timeline: {
+		id: number;
+		type: string;
+		preTitle?: string;
+		title: string;
+		isFlight?: boolean;
+		//  datetime: string;
+		icon: LucideIcon;
+		iconBackground: string;
+		subtitle?: string;
+		//  date?: string;
+		expandable?: boolean;
+		titlePrefix?: string;
+	}[]
 };
 
 export default function TabOneScreen() {
 	const [events, setEvents] = useState<TEvent[]>([]);
 
-	useEffect(() => {
-		(async () => {
-			const { status } = await Calendar.requestCalendarPermissionsAsync();
-			if (status === "granted") {
-				const calendars = await Calendar.getCalendarsAsync(
-					Calendar.EntityTypes.EVENT,
-				);
-				// console.log(calendars);
-				const calendarId = "81715A91-086D-489F-B587-42B940CBD7D8";
-				const mumsCalendarId = "B94BAD5D-87A3-4369-B06E-2AC5EB316BDE";
-				const iosSimCalendarId = "C7856478-1AA3-4D6A-9563-A375108565A5";
+	// Temporrily removed calendar event import
+	// useEffect(() => {
+	// 	(async () => {
+	// 		const { status } = await Calendar.requestCalendarPermissionsAsync();
+	// 		if (status === "granted") {
+	// 			const calendars = await Calendar.getCalendarsAsync(
+	// 				Calendar.EntityTypes.EVENT,
+	// 			);
+	// 			// console.log(calendars);
+	// 			const calendarId = "81715A91-086D-489F-B587-42B940CBD7D8";
+	// 			const mumsCalendarId = "B94BAD5D-87A3-4369-B06E-2AC5EB316BDE";
+	// 			const iosSimCalendarId = "C7856478-1AA3-4D6A-9563-A375108565A5";
 
-				// const allCalendarIds = calendars.map((cal) => cal.id);
+	// 			// const allCalendarIds = calendars.map((cal) => cal.id);
 
-				// console.log(allCalendarIds);
+	// 			// console.log(allCalendarIds);
 
-				const from = new Date();
-				const to = addDays(new Date(), 20);
-				const calEvents = await Calendar.getEventsAsync(
-					[calendarId, mumsCalendarId, iosSimCalendarId],
-					// allCalendarIds,
-					from,
-					to,
-				);
+	// 			const from = new Date();
+	// 			const to = addDays(new Date(), 20);
+	// 			const calEvents = await Calendar.getEventsAsync(
+	// 				[calendarId, mumsCalendarId, iosSimCalendarId],
+	// 				// allCalendarIds,
+	// 				from,
+	// 				to,
+	// 			);
 
-				// console.log(calEvents);
+	// 			// console.log(calEvents);
 
-				let parsedEvents = calendarToEvents(calEvents);
+	// 			let parsedEvents = calendarToEvents(calEvents);
 
-				parsedEvents = parsedEvents.filter(function (element) {
-					return element !== undefined;
-				});
+	// 			parsedEvents = parsedEvents.filter(function (element) {
+	// 				return element !== undefined;
+	// 			});
 
-				// console.log(parsedEvents);
+	// 			// console.log(parsedEvents);
 
-				// Calculate duty periods from duties
-				// @ts-ignore
-				const dutyPeriods = calculateDutyPeriod(parsedEvents);
+	// 			// Calculate duty periods from duties
+	// 			// @ts-ignore
+	// 			const dutyPeriods = calculateDutyPeriod(parsedEvents);
 
-				// console.log(dutyPeriods);
+	// 			// console.log(dutyPeriods);
 
-				// Take duties, amalgamate with duty periods
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-				const dutyPeriodsWithDuties = addDutiesToDutyPeriods(
-					// @ts-ignore
-					dutyPeriods,
-					// @ts-ignore
-					parsedEvents,
-				);
+	// 			// Take duties, amalgamate with duty periods
+	// 			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// 			// @ts-ignore
+	// 			const dutyPeriodsWithDuties = addDutiesToDutyPeriods(
+	// 				// @ts-ignore
+	// 				dutyPeriods,
+	// 				// @ts-ignore
+	// 				parsedEvents,
+	// 			);
 
-				// console.log(dutyPeriodsWithDuties);
+	// 			// console.log(dutyPeriodsWithDuties);
 
-				// Format this data into the correct format to be displayed
-				const formattedDutyPeriods = formatDutyPeriods(dutyPeriodsWithDuties);
+	// 			// Format this data into the correct format to be displayed
+	// 			const formattedDutyPeriods = formatDutyPeriods(dutyPeriodsWithDuties);
 
-				// console.log(formattedDutyPeriods);
+	// 			// console.log(formattedDutyPeriods);
 
-				// @ts-ignore
-				setEvents(formattedDutyPeriods);
-			}
-		})();
-	}, []);
+	// 			// @ts-ignore
+	// 			setEvents(formattedDutyPeriods);
+	// 		}
+	// 	})();
+	// }, []);
+
+
+	// This will need to be passed the correct data eventually
+	processRoster();
+
+
+
+
+	// ------------------------------------------------------------
+
 
 	const [multiple, setMultiple] = React.useState<string[]>(["item-1"]);
 
