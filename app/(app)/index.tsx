@@ -1,10 +1,16 @@
 import { addDays } from "date-fns";
 import * as Calendar from "expo-calendar";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, ScrollView, Text, View } from "react-native";
 
 import { Feed } from "@/components/feed";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { calendarToEvents } from "@/services/calendar";
 import {
@@ -28,7 +34,7 @@ export default function TabOneScreen() {
 				const calendars = await Calendar.getCalendarsAsync(
 					Calendar.EntityTypes.EVENT,
 				);
-				console.log(calendars);
+				// console.log(calendars);
 				const calendarId = "81715A91-086D-489F-B587-42B940CBD7D8";
 				const mumsCalendarId = "B94BAD5D-87A3-4369-B06E-2AC5EB316BDE";
 				const iosSimCalendarId = "C7856478-1AA3-4D6A-9563-A375108565A5";
@@ -46,7 +52,7 @@ export default function TabOneScreen() {
 					to,
 				);
 
-				console.log(calEvents);
+				// console.log(calEvents);
 
 				let parsedEvents = calendarToEvents(calEvents);
 
@@ -72,7 +78,7 @@ export default function TabOneScreen() {
 					parsedEvents,
 				);
 
-				console.log(dutyPeriodsWithDuties);
+				// console.log(dutyPeriodsWithDuties);
 
 				// Format this data into the correct format to be displayed
 				const formattedDutyPeriods = formatDutyPeriods(dutyPeriodsWithDuties);
@@ -85,48 +91,45 @@ export default function TabOneScreen() {
 		})();
 	}, []);
 
+	const [multiple, setMultiple] = React.useState<string[]>(["item-1"]);
+
 	return (
 		<View className="flex-1 bg-background">
-			<ScrollView className="p-4 gap-y-4">
+			<ScrollView className="p-4 px-6 gap-y-4">
 				<Text className="mt-2 text-3xl text-foreground font-extrabold tracking-tight lg:text-5xl">
 					Welcome back, Kieran
 				</Text>
 				<Text className="mb-4 text-md text-muted-foreground">
 					Your roster looks good for this period - take a look below.
 				</Text>
-				{events.map((dutyPeriod, index) => (
-					<>
-						<Card className="col-span-4 overflow-hidden mb-4">
-							<View className="flex flex-row">
-								<View className="grow min-w-72 w-full">
-									<CardHeader>
-										<CardTitle>{dutyPeriod.dateString}</CardTitle>
-									</CardHeader>
-									<CardContent
-										className=""
-										key={`${dutyPeriod.dutyPeriodID.toString()}-feed`}
-									>
-										<Feed timeline={dutyPeriod.timeline} />
-									</CardContent>
-								</View>
-								{/* <View className="min-h-full min-w-72 w-full ml-2">
-						<Map />
-					  </View> */}
-							</View>
-						</Card>
-						{/* <Card className="md:col-span-3 col-span-4 overflow-hidden">
-						<View className="flex flex-row">
-							<View className="grow min-w-72 w-full">
-								<CardHeader>
-									<CardTitle>About This Duty</CardTitle>
-								</CardHeader>
-								<CardContent key={`${dutyPeriod.dutyPeriodID.toString()}-info`}>
-								</CardContent>
-							</View>
-						</View>
-					</Card> */}
-					</>
-				))}
+				<Accordion
+					type="multiple"
+					collapsible
+					value={multiple}
+					onValueChange={setMultiple}
+					className="w-full max-w-sm native:max-w-md"
+				>
+					{events.map((dutyPeriod, index) => (
+						<AccordionItem
+							key={`accordion-${dutyPeriod.dutyPeriodID.toString()}`}
+							value={`item-${dutyPeriod.dutyPeriodID.toString()}`}
+						>
+							<AccordionTrigger>
+								<Text className="text-foreground text-base native:text-lg font-medium web:group-hover:underline">
+									{dutyPeriod.dateString}
+								</Text>
+							</AccordionTrigger>
+							<AccordionContent>
+								<Text className="text-foreground text-base native:text-lg">
+									<Feed
+										key={`feed-${dutyPeriod.dutyPeriodID.toString()}`}
+										timeline={dutyPeriod.timeline}
+									/>
+								</Text>
+							</AccordionContent>
+						</AccordionItem>
+					))}
+				</Accordion>
 			</ScrollView>
 		</View>
 	);
