@@ -2,6 +2,7 @@ import { addDays } from "date-fns";
 import * as Calendar from "expo-calendar";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
+import { Image } from 'react-native-svg';
 
 import { Feed } from "@/components/feed";
 import {
@@ -19,6 +20,8 @@ import {
 } from "@/services/duty-periods";
 import { LucideIcon } from "lucide-react-native";
 import { processRoster } from "@/services/process-roster";
+import { duty } from "@/types";
+import CloudsImage from "@/components/creatives/clouds";
 
 type TEvent = {
 	startDate: Date;
@@ -43,6 +46,20 @@ type TEvent = {
 
 export default function TabOneScreen() {
 	const [events, setEvents] = useState<TEvent[]>([]);
+	const [duties, setDuties] = useState<{
+		dutyPeriodID: number;
+		sectors: number;
+		startTime: string;
+		reportTime: string;
+		endTime: string;
+		debriefTime: string;
+		dutyPeriodHHMM: string;
+		flightDutyPeriodHHMM: string;
+		earliestDPStartTime: Date;
+		earliestNextDPStartTime: Date;
+		isEligibleForHotel: boolean;
+		dutyIDs: number[];
+	}[]>([]);
 
 	// Temporrily removed calendar event import
 	// useEffect(() => {
@@ -111,7 +128,14 @@ export default function TabOneScreen() {
 
 
 	// This will need to be passed the correct data eventually
-	processRoster();
+	;
+
+	useEffect(() => {
+		(async () => {
+			const upcomingDuties = await processRoster();
+			setDuties(upcomingDuties);
+		})();
+	}, []);
 
 
 
@@ -123,13 +147,21 @@ export default function TabOneScreen() {
 
 	return (
 		<View className="flex-1 bg-background">
-			<ScrollView className="p-4 px-6 gap-y-4">
-				<Text className="mt-2 text-3xl text-foreground font-extrabold tracking-tight lg:text-5xl">
-					Welcome back, Kieran
+			<ScrollView className="gap-y-4">
+				<View style={{ aspectRatio: 1, backgroundColor: '#0EA5E9' }}>
+					<Text style={{fontFamily: 'RecklessNeue-Heavy'}} className="mt-[40px] ml-10 text-5xl text-white font-extrabold tracking-tight lg:text-5xl">
+					Good{"\n"}
+					to go!
 				</Text>
-				<Text className="mb-4 text-md text-muted-foreground">
+				<Text  className="text-md text-white font-medium ml-10 mt-[10px] -mb-[100px] ">
+					Updated XX/XX/XXXX at 10:15
+				</Text>
+					<CloudsImage />
+				</View>
+
+				{/* <Text className="mb-4 text-md text-muted-foreground">
 					Your roster looks good for this period - take a look below.
-				</Text>
+				</Text> */}
 				<Accordion
 					type="multiple"
 					collapsible
@@ -158,6 +190,7 @@ export default function TabOneScreen() {
 						</AccordionItem>
 					))}
 				</Accordion>
+				{/* {duties.map((duty, i) => <Text key={i}>{JSON.stringify(duty)}</Text>)} */}
 			</ScrollView>
 		</View>
 	);
