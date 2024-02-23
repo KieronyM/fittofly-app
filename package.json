@@ -9,6 +9,8 @@
 		"lint": "eslint . --fix"
 	},
 	"dependencies": {
+		"@awrminkhodaei/react-native-horizontal-datepicker": "^0.1.6",
+		"@expo-google-fonts/playfair-display": "^0.2.3",
 		"@hookform/resolvers": "^3.1.1",
 		"@radix-ui/react-accordion": "^1.1.2",
 		"@supabase/supabase-js": "^2.38.0",
@@ -21,11 +23,13 @@
 		"expo-constants": "~15.4.5",
 		"expo-font": "~11.10.3",
 		"expo-image": "~1.10.6",
+		"expo-linear-gradient": "~12.7.2",
 		"expo-linking": "~6.2.2",
 		"expo-router": "~3.4.3",
 		"expo-secure-store": "~12.8.1",
 		"expo-status-bar": "~1.11.1",
 		"lucide-react-native": "^0.331.0",
+		"moment-jalaali": "^0.10.0",
 		"nativewind": "^4.0.1",
 		"react": "18.2.0",
 		"react-dom": "^18.2.0",
