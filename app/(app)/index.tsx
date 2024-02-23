@@ -1,32 +1,19 @@
 import HorizontalDatepicker from "@awrminkhodaei/react-native-horizontal-datepicker";
-import { addDays } from "date-fns";
-import * as Calendar from "expo-calendar";
 import { LinearGradient } from "expo-linear-gradient";
-import { LogInIcon, LogOutIcon, LucideIcon, PlaneIcon, PlaneTakeoffIcon } from "lucide-react-native";
+import {
+	CheckIcon,
+	HandHeart,
+	HandHeartIcon,
+	LucideIcon,
+	User,
+} from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Image } from "react-native-svg";
 
-import A320 from "@/components/creatives/a320";
 import CloudsImage from "@/components/creatives/clouds";
 import EZYA320 from "@/components/creatives/ezy-a320";
-import Plane from "@/components/creatives/plane";
-import { Feed } from "@/components/feed";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import { calendarToEvents } from "@/services/calendar";
-import {
-	addDutiesToDutyPeriods,
-	calculateDutyPeriod,
-	formatDutyPeriods,
-} from "@/services/duty-periods";
 import { processRoster } from "@/services/process-roster";
-import { duty } from "@/types";
 
 type TEvent = {
 	startDate: Date;
@@ -67,6 +54,59 @@ export default function TabOneScreen() {
 			dutyIDs: number[];
 		}[]
 	>([]);
+
+	const timeline = [
+		{
+			id: 1,
+			content: "Applied to",
+			target: "Front End Developer",
+			href: "#",
+			date: "Sep 20",
+			datetime: "2020-09-20",
+			icon: User,
+			iconBackground: "bg-gray-400",
+		},
+		{
+			id: 2,
+			content: "Advanced to phone screening by",
+			target: "Bethany Blake",
+			href: "#",
+			date: "Sep 22",
+			datetime: "2020-09-22",
+			icon: HandHeart,
+			iconBackground: "bg-blue-500",
+		},
+		{
+			id: 3,
+			content: "Completed phone screening with",
+			target: "Martha Gardner",
+			href: "#",
+			date: "Sep 28",
+			datetime: "2020-09-28",
+			icon: CheckIcon,
+			iconBackground: "bg-green-500",
+		},
+		{
+			id: 4,
+			content: "Advanced to interview by",
+			target: "Bethany Blake",
+			href: "#",
+			date: "Sep 30",
+			datetime: "2020-09-30",
+			icon: HandHeartIcon,
+			iconBackground: "bg-blue-500",
+		},
+		{
+			id: 5,
+			content: "Completed interview with",
+			target: "Katherine Snyder",
+			href: "#",
+			date: "Oct 4",
+			datetime: "2020-10-04",
+			icon: CheckIcon,
+			iconBackground: "bg-green-500",
+		},
+	];
 
 	// Temporrily removed calendar event import
 	// useEffect(() => {
@@ -174,10 +214,10 @@ export default function TabOneScreen() {
 					// Background Linear Gradient
 					colors={gradients.sunrise}
 					// className="flex mt-[150px]"
-					style={{ width: "100%" }}
+					style={{ width: "100%", height: 370 }}
 					// style={styles.background}
 				>
-					<View className="mt-[120px]" style={{ flexDirection: "row" }}>
+					<View className="mt-[126px]" style={{ flexDirection: "row" }}>
 						<View style={{ flex: 1 }}>
 							<Text
 								style={{ fontFamily: "PlayfairDisplay_800ExtraBold" }}
@@ -209,7 +249,7 @@ export default function TabOneScreen() {
 					>
 						Today
 					</Text> */}
-					{/* <HorizontalDatepicker
+					<HorizontalDatepicker
 						mode="gregorian"
 						startDate={new Date("2024-02-22")}
 						endDate={new Date("2024-03-31")}
@@ -225,83 +265,45 @@ export default function TabOneScreen() {
 						unselectedItemBackgroundColor="#ececec"
 						flatListContainerStyle={{ backgroundColor: "white" }}
 						// flatListContainerStyle={styles.flatListContainerStyle}
-					/> */}
-					{/* <Text>
-						Roster goes here
-					</Text> */}
+					/>
+				</View>
 
-					<View className="relative px-4 pt-4">
-						{/* <View className="absolute left-[36px] top-5 -ml-px h-full w-0.5 bg-gray-200" /> */}
-						<View className="relative flex items-start space-x-3">
-							<View>
-								<View className="relative px-1">
-									<View className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-sky-500 ring-8 ring-white">
-										<LogInIcon color="white" />
+				<View className="flow-root">
+					<View role="list" className="-mb-8 p-4">
+						{timeline.map((event, eventIdx) => (
+							<View key={event.id}>
+								<View className="relative pb-8">
+									{eventIdx !== timeline.length - 1 ? (
+										<View className="absolute left-[17px] top-8 -ml-px h-full w-1 bg-gray-200" />
+									) : null}
+									<View className="relative flex space-x-3">
+										<View>
+											<View
+												className={cn(
+													event.iconBackground,
+													"h-[36px] w-[36px] rounded-full flex items-center justify-center ring-8 ring-white",
+												)}
+											>
+												<event.icon size={24} color="white" />
+											</View>
+										</View>
+										<View className="flex min-w-0 flex-1 justify-between space-x-4 pl-[50px] -mt-[30px]">
+											<View>
+												<Text className="text-lg text-gray-500">
+													{event.content}{" "}
+													<Text className="font-medium text-gray-900">
+														{event.target}
+													</Text>
+												</Text>
+											</View>
+											{/* <Text className="whitespace-nowrap text-right text-md text-gray-500">
+												{event.date}
+											</Text> */}
+										</View>
 									</View>
 								</View>
 							</View>
-							<View className="min-w-0 flex-1 ml-[55px] -mt-[39px] mb-5">
-								<View>
-									<Text className="mt-0.5 text-md text-gray-500">09:00</Text>
-									<View className="">
-										<Text className="text-lg font-medium text-gray-900">
-											Report
-										</Text>
-									</View>
-								</View>
-								{/* <View className="mb-5 text-sm text-gray-700">
-									<Text>Not much to go here really2</Text>
-								</View> */}
-							</View>
-						</View>
-						{/* 2 */}
-						{/* Hide this as it's last */}
-						<View className="absolute left-[37px] mt-[54px] -mb-[54px] -ml-px h-full w-1 bg-gray-200"/>
-						<View className="mb-5 relative flex items-start space-x-3">
-							<View>
-								<View className="relative px-1">
-									<View className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-green-500 ring-8 ring-white">
-										<PlaneIcon color="white" />
-									</View>
-								</View>
-							</View>
-							<View className="min-w-0 flex-1 ml-[55px] -mt-[39px]">
-								<View>
-									<Text className="mt-0.5 text-md text-gray-500">10:00 - 12:05</Text>
-									<View className="">
-										<Text className="text-lg font-medium text-gray-900">
-											London Gatwick (LGW) to Faro (FAO)
-										</Text>
-									</View>
-								</View>
-								<View className="text-sm text-gray-700">
-									<Text>U2 1234 | 2 hrs 5 mins | G-EZTL (A320)</Text>
-								</View>
-							</View>
-						</View>
-						{/* Off Duty */}
-						<View className="relative flex items-start space-x-3">
-							<View>
-								<View className="relative px-1">
-									<View className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-sky-500 ring-8 ring-white">
-										<LogOutIcon color="white" />
-									</View>
-								</View>
-							</View>
-							<View className="min-w-0 flex-1 ml-[55px] -mt-[39px] mb-5">
-								<View>
-									<Text className="mt-0.5 text-md text-gray-500">09:00</Text>
-									<View className="">
-										<Text className="text-lg font-medium text-gray-900">
-											Off Duty
-										</Text>
-									</View>
-								</View>
-								{/* <View className="mb-5 text-sm text-gray-700">
-									<Text>Not much to go here really2</Text>
-								</View> */}
-							</View>
-						</View>
+						))}
 					</View>
 				</View>
 
