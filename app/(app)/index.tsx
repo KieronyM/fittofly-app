@@ -2,7 +2,7 @@ import HorizontalDatepicker from "@awrminkhodaei/react-native-horizontal-datepic
 import { addDays } from "date-fns";
 import * as Calendar from "expo-calendar";
 import { LinearGradient } from "expo-linear-gradient";
-import { LucideIcon } from "lucide-react-native";
+import { LogInIcon, LogOutIcon, LucideIcon, PlaneIcon, PlaneTakeoffIcon } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Image } from "react-native-svg";
@@ -191,7 +191,7 @@ export default function TabOneScreen() {
 								Take a look at your roster below.
 							</Text>
 						</View>
-						<View className="mr-5 -mb-[30px]" style={{ flex: 1 }}>
+						<View className="mr-5 -mb-[40px]" style={{ flex: 1 }}>
 							{/* <Plane /> */}
 							<EZYA320 />
 						</View>
@@ -209,7 +209,7 @@ export default function TabOneScreen() {
 					>
 						Today
 					</Text> */}
-					<HorizontalDatepicker
+					{/* <HorizontalDatepicker
 						mode="gregorian"
 						startDate={new Date("2024-02-22")}
 						endDate={new Date("2024-03-31")}
@@ -225,13 +225,87 @@ export default function TabOneScreen() {
 						unselectedItemBackgroundColor="#ececec"
 						flatListContainerStyle={{ backgroundColor: "white" }}
 						// flatListContainerStyle={styles.flatListContainerStyle}
-					/>
+					/> */}
 					{/* <Text>
 						Roster goes here
 					</Text> */}
+
+					<View className="relative px-4 pt-4">
+						{/* <View className="absolute left-[36px] top-5 -ml-px h-full w-0.5 bg-gray-200" /> */}
+						<View className="relative flex items-start space-x-3">
+							<View>
+								<View className="relative px-1">
+									<View className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-sky-500 ring-8 ring-white">
+										<LogInIcon color="white" />
+									</View>
+								</View>
+							</View>
+							<View className="min-w-0 flex-1 ml-[55px] -mt-[39px] mb-5">
+								<View>
+									<Text className="mt-0.5 text-md text-gray-500">09:00</Text>
+									<View className="">
+										<Text className="text-lg font-medium text-gray-900">
+											Report
+										</Text>
+									</View>
+								</View>
+								{/* <View className="mb-5 text-sm text-gray-700">
+									<Text>Not much to go here really2</Text>
+								</View> */}
+							</View>
+						</View>
+						{/* 2 */}
+						{/* Hide this as it's last */}
+						<View className="absolute left-[37px] mt-[54px] -mb-[54px] -ml-px h-full w-1 bg-gray-200"/>
+						<View className="mb-5 relative flex items-start space-x-3">
+							<View>
+								<View className="relative px-1">
+									<View className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-green-500 ring-8 ring-white">
+										<PlaneIcon color="white" />
+									</View>
+								</View>
+							</View>
+							<View className="min-w-0 flex-1 ml-[55px] -mt-[39px]">
+								<View>
+									<Text className="mt-0.5 text-md text-gray-500">10:00 - 12:05</Text>
+									<View className="">
+										<Text className="text-lg font-medium text-gray-900">
+											London Gatwick (LGW) to Faro (FAO)
+										</Text>
+									</View>
+								</View>
+								<View className="text-sm text-gray-700">
+									<Text>U2 1234 | 2 hrs 5 mins | G-EZTL (A320)</Text>
+								</View>
+							</View>
+						</View>
+						{/* Off Duty */}
+						<View className="relative flex items-start space-x-3">
+							<View>
+								<View className="relative px-1">
+									<View className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-sky-500 ring-8 ring-white">
+										<LogOutIcon color="white" />
+									</View>
+								</View>
+							</View>
+							<View className="min-w-0 flex-1 ml-[55px] -mt-[39px] mb-5">
+								<View>
+									<Text className="mt-0.5 text-md text-gray-500">09:00</Text>
+									<View className="">
+										<Text className="text-lg font-medium text-gray-900">
+											Off Duty
+										</Text>
+									</View>
+								</View>
+								{/* <View className="mb-5 text-sm text-gray-700">
+									<Text>Not much to go here really2</Text>
+								</View> */}
+							</View>
+						</View>
+					</View>
 				</View>
 
-				<Accordion
+				{/* <Accordion
 					type="multiple"
 					collapsible
 					value={multiple}
@@ -258,7 +332,7 @@ export default function TabOneScreen() {
 							</AccordionContent>
 						</AccordionItem>
 					))}
-				</Accordion>
+				</Accordion> */}
 				{/* {duties.map((duty, i) => <Text key={i}>{JSON.stringify(duty)}</Text>)} */}
 			</ScrollView>
 		</View>
