@@ -1,3 +1,7 @@
+import {
+	PlayfairDisplay_800ExtraBold,
+	useFonts,
+} from "@expo-google-fonts/playfair-display";
 import { Tabs } from "expo-router";
 import {
 	CalendarFold,
@@ -13,6 +17,14 @@ import React from "react";
 export default function AppLayout() {
 	const { colorScheme } = useColorScheme();
 
+	const [fontsLoaded, fontError] = useFonts({
+		PlayfairDisplay_800ExtraBold,
+	});
+
+	if (!fontsLoaded && !fontError) {
+		return null;
+	}
+
 	return (
 		<Tabs
 			screenOptions={{
@@ -23,7 +35,7 @@ export default function AppLayout() {
 					backgroundColor:
 						colorScheme === "dark" ? "hsl(240, 10%, 3.9%)" : "hsl(0, 0%, 100%)",
 				},
-				tabBarShowLabel: false
+				tabBarShowLabel: false,
 			}}
 		>
 			<Tabs.Screen

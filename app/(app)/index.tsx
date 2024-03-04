@@ -1,9 +1,16 @@
+import HorizontalDatepicker from "@awrminkhodaei/react-native-horizontal-datepicker";
 import { addDays } from "date-fns";
 import * as Calendar from "expo-calendar";
+import { LinearGradient } from "expo-linear-gradient";
+import { LucideIcon } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Image } from 'react-native-svg';
+import { Image } from "react-native-svg";
 
+import A320 from "@/components/creatives/a320";
+import CloudsImage from "@/components/creatives/clouds";
+import EZYA320 from "@/components/creatives/ezy-a320";
+import Plane from "@/components/creatives/plane";
 import { Feed } from "@/components/feed";
 import {
 	Accordion,
@@ -18,10 +25,8 @@ import {
 	calculateDutyPeriod,
 	formatDutyPeriods,
 } from "@/services/duty-periods";
-import { LucideIcon } from "lucide-react-native";
 import { processRoster } from "@/services/process-roster";
 import { duty } from "@/types";
-import CloudsImage from "@/components/creatives/clouds";
 
 type TEvent = {
 	startDate: Date;
@@ -41,25 +46,27 @@ type TEvent = {
 		//  date?: string;
 		expandable?: boolean;
 		titlePrefix?: string;
-	}[]
+	}[];
 };
 
 export default function TabOneScreen() {
 	const [events, setEvents] = useState<TEvent[]>([]);
-	const [duties, setDuties] = useState<{
-		dutyPeriodID: number;
-		sectors: number;
-		startTime: string;
-		reportTime: string;
-		endTime: string;
-		debriefTime: string;
-		dutyPeriodHHMM: string;
-		flightDutyPeriodHHMM: string;
-		earliestDPStartTime: Date;
-		earliestNextDPStartTime: Date;
-		isEligibleForHotel: boolean;
-		dutyIDs: number[];
-	}[]>([]);
+	const [duties, setDuties] = useState<
+		{
+			dutyPeriodID: number;
+			sectors: number;
+			startTime: string;
+			reportTime: string;
+			endTime: string;
+			debriefTime: string;
+			dutyPeriodHHMM: string;
+			flightDutyPeriodHHMM: string;
+			earliestDPStartTime: Date;
+			earliestNextDPStartTime: Date;
+			isEligibleForHotel: boolean;
+			dutyIDs: number[];
+		}[]
+	>([]);
 
 	// Temporrily removed calendar event import
 	// useEffect(() => {
@@ -126,10 +133,7 @@ export default function TabOneScreen() {
 	// 	})();
 	// }, []);
 
-
 	// This will need to be passed the correct data eventually
-	;
-
 	useEffect(() => {
 		(async () => {
 			const upcomingDuties = await processRoster();
@@ -137,31 +141,96 @@ export default function TabOneScreen() {
 		})();
 	}, []);
 
-
-
-
 	// ------------------------------------------------------------
 
-
 	const [multiple, setMultiple] = React.useState<string[]>(["item-1"]);
+
+	// https://gradient.page/css/ui-gradients
+	const gradients = {
+		sunrise: [
+			"#3f51b1",
+			"#5a55ae",
+			"#7b5fac",
+			"#8f6aae",
+			"#a86aa4",
+			"#cc6b8e",
+			"#f18271",
+			"#f3a469",
+			"#f7c978",
+		],
+		day: ["#2f80ed", "#56ccf2"],
+		day2: ["#495aff", "#0acffe"],
+		sunset: ["#0B486B", "#F56217"],
+		night: ["#000428", "#004e92"],
+	};
 
 	return (
 		<View className="flex-1 bg-background">
 			<ScrollView className="gap-y-4">
-				<View style={{ aspectRatio: 1, backgroundColor: '#0EA5E9' }}>
-					<Text style={{fontFamily: 'RecklessNeue-Heavy'}} className="mt-[40px] ml-10 text-5xl text-white font-extrabold tracking-tight lg:text-5xl">
-					Good{"\n"}
-					to go!
-				</Text>
-				<Text  className="text-md text-white font-medium ml-10 mt-[10px] -mb-[100px] ">
-					Updated XX/XX/XXXX at 10:15
-				</Text>
-					<CloudsImage />
+				{/* <View
+					style={{ width: "100%", height: 350, backgroundColor: "#0EA5E9" }}
+				> */}
+				<LinearGradient
+					// Background Linear Gradient
+					colors={gradients.sunrise}
+					// className="flex mt-[150px]"
+					style={{ width: "100%" }}
+					// style={styles.background}
+				>
+					<View className="mt-[120px]" style={{ flexDirection: "row" }}>
+						<View style={{ flex: 1 }}>
+							<Text
+								style={{ fontFamily: "PlayfairDisplay_800ExtraBold" }}
+								className="ml-5 text-5xl text-white font-extrabold tracking-tight lg:text-5xl"
+							>
+								{/* Can also be nice to know or need to know with error below */}
+								Good{"\n"}
+								to go.
+							</Text>
+							<Text className="mt-3 text-lg text-white font-semibold ml-5">
+								Take a look at your roster below.
+							</Text>
+						</View>
+						<View className="mr-5 -mb-[30px]" style={{ flex: 1 }}>
+							{/* <Plane /> */}
+							<EZYA320 />
+						</View>
+					</View>
+					<View className="-mb-[54px] -mt-[70px]">
+						<CloudsImage />
+					</View>
+				</LinearGradient>
+				{/* </View> */}
+
+				<View className="pt-2">
+					{/* <Text
+						// style={{ fontFamily: "PlayfairDisplay_800ExtraBold" }}
+						className="mb-4 text-2xl font-bold text-foreground"
+					>
+						Today
+					</Text> */}
+					<HorizontalDatepicker
+						mode="gregorian"
+						startDate={new Date("2024-02-22")}
+						endDate={new Date("2024-03-31")}
+						initialSelectedDate={new Date("2024-02-22")}
+						onSelectedDateChange={(date) => console.log(date)}
+						selectedItemWidth={170}
+						unselectedItemWidth={38}
+						itemHeight={38}
+						itemRadius={10}
+						// selectedItemTextStyle={styles.selectedItemTextStyle}
+						// unselectedItemTextStyle={styles.selectedItemTextStyle}
+						selectedItemBackgroundColor="#222831"
+						unselectedItemBackgroundColor="#ececec"
+						flatListContainerStyle={{ backgroundColor: "white" }}
+						// flatListContainerStyle={styles.flatListContainerStyle}
+					/>
+					{/* <Text>
+						Roster goes here
+					</Text> */}
 				</View>
 
-				{/* <Text className="mb-4 text-md text-muted-foreground">
-					Your roster looks good for this period - take a look below.
-				</Text> */}
 				<Accordion
 					type="multiple"
 					collapsible

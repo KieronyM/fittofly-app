@@ -31,8 +31,7 @@
       "typedRoutes": true
     },
     "plugins": [
-      "expo-router",
-      ["expo-font", {"fonts": ["./assets/fonts/RecklessNeue/RecklessNeue-Heavy.ttf"]}]
+      "expo-router"
     ]
   }
 }
