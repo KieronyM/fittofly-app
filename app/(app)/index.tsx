@@ -2,14 +2,10 @@ import HorizontalDatepicker from "@awrminkhodaei/react-native-horizontal-datepic
 import { LinearGradient } from "expo-linear-gradient";
 import {
 	ArrowLeftRight,
-	CheckIcon,
-	HandHeart,
-	HandHeartIcon,
 	LogInIcon,
 	LogOutIcon,
 	LucideIcon,
 	PlaneIcon,
-	User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -96,14 +92,24 @@ export default function TabOneScreen() {
 			icon: PlaneIcon,
 			iconBackground: "bg-green-500",
 		},
-		// {
-		// 	id: 4,
-		// 	content: "Advanced to interview by",
-		// 	aboveTitle: "Bethany Blake",
-		// 	belowTitle: "Below title",
-		// 	icon: HandHeartIcon,
-		// 	iconBackground: "bg-blue-500",
-		// },
+		{
+			id: 7,
+			type: "between",
+			content: "Turnaround - 35 mins",
+			aboveTitle: "",
+			belowTitle: "",
+			icon: ArrowLeftRight,
+			iconBackground: "bg-white",
+		},
+		{
+			id: 6,
+			type: "main",
+			content: "Faro (FAO) to London Gatwick (LGW)",
+			aboveTitle: "12:35 - 14:00",
+			belowTitle: "U2 1235 | 2 hrs 25 mins | G-EZTL (A320)",
+			icon: PlaneIcon,
+			iconBackground: "bg-green-500",
+		},
 		{
 			id: 5,
 			type: "main",
@@ -190,8 +196,6 @@ export default function TabOneScreen() {
 
 	// ------------------------------------------------------------
 
-	const [multiple, setMultiple] = React.useState<string[]>(["item-1"]);
-
 	// https://gradient.page/css/ui-gradients
 	const gradients = {
 		sunrise: [
@@ -219,7 +223,7 @@ export default function TabOneScreen() {
 				> */}
 				<LinearGradient
 					// Background Linear Gradient
-					colors={gradients.sunrise}
+					colors={gradients.day}
 					// className="flex mt-[150px]"
 					style={{ width: "100%", height: 370 }}
 					// style={styles.background}
@@ -258,9 +262,9 @@ export default function TabOneScreen() {
 					</Text> */}
 					<HorizontalDatepicker
 						mode="gregorian"
-						startDate={new Date("2024-02-22")}
+						startDate={new Date("2024-03-13")}
 						endDate={new Date("2024-03-31")}
-						initialSelectedDate={new Date("2024-02-22")}
+						initialSelectedDate={new Date("2024-03-13")}
 						onSelectedDateChange={(date) => console.log(date)}
 						selectedItemWidth={170}
 						unselectedItemWidth={38}
@@ -268,7 +272,7 @@ export default function TabOneScreen() {
 						itemRadius={10}
 						// selectedItemTextStyle={styles.selectedItemTextStyle}
 						// unselectedItemTextStyle={styles.selectedItemTextStyle}
-						selectedItemBackgroundColor="#222831"
+						selectedItemBackgroundColor="#0EA5E9"
 						unselectedItemBackgroundColor="#ececec"
 						flatListContainerStyle={{ backgroundColor: "white" }}
 						// flatListContainerStyle={styles.flatListContainerStyle}
