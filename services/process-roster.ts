@@ -1,5 +1,5 @@
 // services
-import { upcomingDuties } from "@/data/duties";
+// import { upcomingDuties } from "@/data/duties";
 import { calculateCurrentFlightAndDutyTotals } from "@/services/process-roster/calculateCurrentFlightAndDutyTotals";
 import { calculateDailyMinutes } from "@/services/process-roster/calculateDailyMinutes";
 import { calculatedutyBlock } from "@/services/process-roster/calculateDutyBlock";
@@ -12,7 +12,7 @@ import { validateRestPeriod } from "@/services/process-roster/validateRestPeriod
 // data
 // This will eventually be a DB query given a start and end date and will return all duties within it
 
-export async function processRoster() {
+export async function processRoster(upcomingDuties) {
 	//++++++++++++++
 	// Duty Periods:
 	//++++++++++++++

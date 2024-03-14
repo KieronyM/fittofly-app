@@ -1,4 +1,7 @@
 import HorizontalDatepicker from "@awrminkhodaei/react-native-horizontal-datepicker";
+import { addDays, subDays } from "date-fns";
+import { format, formatInTimeZone } from "date-fns-tz";
+import * as Calendar from "expo-calendar";
 import { LinearGradient } from "expo-linear-gradient";
 import {
 	ArrowLeftRight,
@@ -13,6 +16,8 @@ import { ScrollView, Text, View } from "react-native";
 import CloudsImage from "@/components/creatives/clouds";
 import EZYA320 from "@/components/creatives/ezy-a320";
 import { cn } from "@/lib/utils";
+import { getNameFromIATACode } from "@/services/airport-codes";
+import { calendarToDuties } from "@/services/calendar";
 import { processRoster } from "@/services/process-roster";
 
 type TEvent = {
@@ -121,76 +126,135 @@ export default function TabOneScreen() {
 		},
 	];
 
-	// Temporrily removed calendar event import
-	// useEffect(() => {
-	// 	(async () => {
-	// 		const { status } = await Calendar.requestCalendarPermissionsAsync();
-	// 		if (status === "granted") {
-	// 			const calendars = await Calendar.getCalendarsAsync(
-	// 				Calendar.EntityTypes.EVENT,
-	// 			);
-	// 			// console.log(calendars);
-	// 			const calendarId = "81715A91-086D-489F-B587-42B940CBD7D8";
-	// 			const mumsCalendarId = "B94BAD5D-87A3-4369-B06E-2AC5EB316BDE";
-	// 			const iosSimCalendarId = "C7856478-1AA3-4D6A-9563-A375108565A5";
-
-	// 			// const allCalendarIds = calendars.map((cal) => cal.id);
-
-	// 			// console.log(allCalendarIds);
-
-	// 			const from = new Date();
-	// 			const to = addDays(new Date(), 20);
-	// 			const calEvents = await Calendar.getEventsAsync(
-	// 				[calendarId, mumsCalendarId, iosSimCalendarId],
-	// 				// allCalendarIds,
-	// 				from,
-	// 				to,
-	// 			);
-
-	// 			// console.log(calEvents);
-
-	// 			let parsedEvents = calendarToEvents(calEvents);
-
-	// 			parsedEvents = parsedEvents.filter(function (element) {
-	// 				return element !== undefined;
-	// 			});
-
-	// 			// console.log(parsedEvents);
-
-	// 			// Calculate duty periods from duties
-	// 			// @ts-ignore
-	// 			const dutyPeriods = calculateDutyPeriod(parsedEvents);
-
-	// 			// console.log(dutyPeriods);
-
-	// 			// Take duties, amalgamate with duty periods
-	// 			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// 			// @ts-ignore
-	// 			const dutyPeriodsWithDuties = addDutiesToDutyPeriods(
-	// 				// @ts-ignore
-	// 				dutyPeriods,
-	// 				// @ts-ignore
-	// 				parsedEvents,
-	// 			);
-
-	// 			// console.log(dutyPeriodsWithDuties);
-
-	// 			// Format this data into the correct format to be displayed
-	// 			const formattedDutyPeriods = formatDutyPeriods(dutyPeriodsWithDuties);
-
-	// 			// console.log(formattedDutyPeriods);
-
-	// 			// @ts-ignore
-	// 			setEvents(formattedDutyPeriods);
-	// 		}
-	// 	})();
-	// }, []);
-
 	// This will need to be passed the correct data eventually
 	useEffect(() => {
 		(async () => {
-			const upcomingDuties = await processRoster();
-			setDuties(upcomingDuties);
+			const { status } = await Calendar.requestCalendarPermissionsAsync();
+			if (status === "granted") {
+				const calendars = await Calendar.getCalendarsAsync(
+					Calendar.EntityTypes.EVENT,
+				);
+				// console.log(calendars);
+				const calendarId = "81715A91-086D-489F-B587-42B940CBD7D8";
+				const mumsCalendarId = "B94BAD5D-87A3-4369-B06E-2AC5EB316BDE";
+				const iosSimCalendarId = "C7856478-1AA3-4D6A-9563-A375108565A5";
+
+				// const allCalendarIds = calendars.map((cal) => cal.id);
+
+				// console.log(allCalendarIds);
+
+				// Initially today
+				const from = subDays(new Date(), 0);
+				// To the end of the roster generation period, so
+				// 31st of the next month after the 17th
+				const to = addDays(new Date(), 16);
+				const calEvents = await Calendar.getEventsAsync(
+					[calendarId, mumsCalendarId, iosSimCalendarId],
+					// allCalendarIds,
+					from,
+					to,
+				);
+
+				// console.log(calEvents);
+
+				let upcomingDuties = calendarToDuties(calEvents);
+
+				// Remove any undefined events
+				upcomingDuties = upcomingDuties.filter(function (element) {
+					return element !== undefined;
+				});
+
+				// Calculate duty periods from duties
+				const processedDuties = await processRoster(upcomingDuties);
+
+				// - Combine the duties into the duty periods
+				const dutyPeriodWithDuties = processedDuties.map((processedDuty) => {
+					const duties = processedDuty.dutyIDs.map((dutyId) =>
+						upcomingDuties.find((duty) => duty?.dutyID === dutyId),
+					);
+
+					return {
+						...processedDuty,
+						duties,
+					};
+				});
+
+				console.log(dutyPeriodWithDuties);
+
+				// - Then generate the UI for each duty period
+				// TODO: Make this dependent on date
+				// FOR NOW, use the first one
+				const selectedDutyPeriod = dutyPeriodWithDuties[0];
+
+				const formattedDuties = [];
+
+				// First do a report
+				formattedDuties.push({
+					id: 0,
+					type: "main",
+					icon: LogInIcon,
+					iconBackground: "bg-sky-500",
+					aboveTitle: formatInTimeZone(
+						new Date(selectedDutyPeriod.reportTime),
+						"Europe/London",
+						"HH:mm",
+					),
+					content: "Report",
+					belowTitle: "",
+				});
+
+				selectedDutyPeriod.duties.forEach((duty, i) => {
+					formattedDuties.push({
+						id: duty?.dutyID,
+						type: "main",
+						content: `${getNameFromIATACode(duty?.origin)} (${duty?.origin}) to ${getNameFromIATACode(duty?.destination)} (${duty?.destination})`,
+						aboveTitle: `${formatInTimeZone(
+							new Date(duty?.startTime || 0),
+							"Europe/London",
+							"HH:mm",
+						)} - ${formatInTimeZone(
+							new Date(duty?.endTime || 0),
+							"Europe/London",
+							"HH:mm",
+						)}`,
+						belowTitle: "U2 1235 | 2 hrs 25 mins | G-EZTL (A320)",
+						icon: PlaneIcon,
+						iconBackground: "bg-green-500",
+					});
+
+					if (i < selectedDutyPeriod.duties.length - 1)
+						formattedDuties.push({
+							id: duty?.dutyID * 99,
+							type: "between",
+							content: "Turnaround - 35 mins",
+							aboveTitle: "",
+							belowTitle: "",
+							icon: ArrowLeftRight,
+							iconBackground: "bg-white",
+						});
+				});
+
+				// Finish with an off duty time
+				formattedDuties.push({
+					id: 999999,
+					type: "main",
+					icon: LogOutIcon,
+					iconBackground: "bg-sky-500",
+					aboveTitle: formatInTimeZone(
+						new Date(selectedDutyPeriod.debriefTime),
+						"Europe/London",
+						"HH:mm",
+					),
+					content: "Off Duty",
+					belowTitle: "",
+				});
+
+				console.log(formattedDuties);
+
+				setEvents(formattedDuties);
+
+				// setDuties(upcomingDuties);
+			}
 		})();
 	}, []);
 
@@ -281,7 +345,7 @@ export default function TabOneScreen() {
 
 				<View className="flow-root">
 					<View role="list" className="-mb-8 p-4">
-						{timeline.map((event, eventIdx) => (
+						{events.map((event, eventIdx) => (
 							<View key={event.id}>
 								<View className="relative pb-8">
 									{eventIdx !== timeline.length - 1 ? (
