@@ -2,6 +2,7 @@ import "../global.css";
 
 // import { Image } from "expo-image";
 import { Stack, SplashScreen } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 import { useEffect, useCallback } from "react";
 import { StyleSheet, Image } from "react-native";
@@ -46,6 +47,7 @@ function RootLayoutNav() {
 	return (
 		<SupabaseProvider>
 			<SafeAreaProvider>
+				<StatusBar style="light" />
 				<Stack>
 					<Stack.Screen name="(auth)" />
 					<Stack.Screen

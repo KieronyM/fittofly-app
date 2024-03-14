@@ -1,32 +1,23 @@
 import HorizontalDatepicker from "@awrminkhodaei/react-native-horizontal-datepicker";
-import { addDays } from "date-fns";
-import * as Calendar from "expo-calendar";
 import { LinearGradient } from "expo-linear-gradient";
-import { LucideIcon } from "lucide-react-native";
+import {
+	ArrowLeftRight,
+	CheckIcon,
+	HandHeart,
+	HandHeartIcon,
+	LogInIcon,
+	LogOutIcon,
+	LucideIcon,
+	PlaneIcon,
+	User,
+} from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Image } from "react-native-svg";
 
-import A320 from "@/components/creatives/a320";
 import CloudsImage from "@/components/creatives/clouds";
 import EZYA320 from "@/components/creatives/ezy-a320";
-import Plane from "@/components/creatives/plane";
-import { Feed } from "@/components/feed";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import { calendarToEvents } from "@/services/calendar";
-import {
-	addDutiesToDutyPeriods,
-	calculateDutyPeriod,
-	formatDutyPeriods,
-} from "@/services/duty-periods";
 import { processRoster } from "@/services/process-roster";
-import { duty } from "@/types";
 
 type TEvent = {
 	startDate: Date;
@@ -67,6 +58,62 @@ export default function TabOneScreen() {
 			dutyIDs: number[];
 		}[]
 	>([]);
+
+	const timeline = [
+		{
+			id: 1,
+			type: "main",
+			icon: LogInIcon,
+			iconBackground: "bg-sky-400",
+			aboveTitle: "09:00",
+			content: "Report",
+			belowTitle: "",
+		},
+		{
+			id: 2,
+			type: "main",
+			content: "London Gatwick (LGW) to Faro (FAO)",
+			aboveTitle: "10:00 - 12:05",
+			belowTitle: "U2 1234 | 2 hrs 5 mins | G-EZTL (A320)",
+			icon: PlaneIcon,
+			iconBackground: "bg-green-500",
+		},
+		{
+			id: 2.1,
+			type: "between",
+			content: "Turnaround - 35 mins",
+			aboveTitle: "",
+			belowTitle: "",
+			icon: ArrowLeftRight,
+			iconBackground: "bg-white",
+		},
+		{
+			id: 3,
+			type: "main",
+			content: "Faro (FAO) to London Gatwick (LGW)",
+			aboveTitle: "12:35 - 14:00",
+			belowTitle: "U2 1235 | 2 hrs 25 mins | G-EZTL (A320)",
+			icon: PlaneIcon,
+			iconBackground: "bg-green-500",
+		},
+		// {
+		// 	id: 4,
+		// 	content: "Advanced to interview by",
+		// 	aboveTitle: "Bethany Blake",
+		// 	belowTitle: "Below title",
+		// 	icon: HandHeartIcon,
+		// 	iconBackground: "bg-blue-500",
+		// },
+		{
+			id: 5,
+			type: "main",
+			content: "Off Duty",
+			aboveTitle: "14:30",
+			belowTitle: "",
+			icon: LogOutIcon,
+			iconBackground: "bg-sky-500",
+		},
+	];
 
 	// Temporrily removed calendar event import
 	// useEffect(() => {
@@ -166,7 +213,7 @@ export default function TabOneScreen() {
 
 	return (
 		<View className="flex-1 bg-background">
-			<ScrollView className="gap-y-4">
+			<ScrollView className="gap-y-4" alwaysBounceVertical={false}>
 				{/* <View
 					style={{ width: "100%", height: 350, backgroundColor: "#0EA5E9" }}
 				> */}
@@ -174,10 +221,10 @@ export default function TabOneScreen() {
 					// Background Linear Gradient
 					colors={gradients.sunrise}
 					// className="flex mt-[150px]"
-					style={{ width: "100%" }}
+					style={{ width: "100%", height: 370 }}
 					// style={styles.background}
 				>
-					<View className="mt-[120px]" style={{ flexDirection: "row" }}>
+					<View style={{ flexDirection: "row", marginTop: 126 }}>
 						<View style={{ flex: 1 }}>
 							<Text
 								style={{ fontFamily: "PlayfairDisplay_800ExtraBold" }}
@@ -191,12 +238,12 @@ export default function TabOneScreen() {
 								Take a look at your roster below.
 							</Text>
 						</View>
-						<View className="mr-5 -mb-[30px]" style={{ flex: 1 }}>
+						<View className="mr-5" style={{ flex: 1, marginBottom: -40 }}>
 							{/* <Plane /> */}
 							<EZYA320 />
 						</View>
 					</View>
-					<View className="-mb-[54px] -mt-[70px]">
+					<View style={{ marginTop: -70, marginBottom: -54 }}>
 						<CloudsImage />
 					</View>
 				</LinearGradient>
@@ -226,12 +273,69 @@ export default function TabOneScreen() {
 						flatListContainerStyle={{ backgroundColor: "white" }}
 						// flatListContainerStyle={styles.flatListContainerStyle}
 					/>
-					{/* <Text>
-						Roster goes here
-					</Text> */}
 				</View>
 
-				<Accordion
+				<View className="flow-root">
+					<View role="list" className="-mb-8 p-4">
+						{timeline.map((event, eventIdx) => (
+							<View key={event.id}>
+								<View className="relative pb-8">
+									{eventIdx !== timeline.length - 1 ? (
+										<View
+											style={{ left: 17 }}
+											className="absolute top-8 -ml-px h-full w-1 bg-gray-200"
+										/>
+									) : null}
+									<View className="relative flex space-x-3">
+										<View>
+											<View
+												className={cn(
+													event.iconBackground,
+													"h-12 w-12 rounded-full flex items-center justify-center ring-8 ring-white",
+												)}
+											>
+												<event.icon
+													size={event.type === "main" ? 24 : 20}
+													color={event.type === "main" ? "white" : "#6b7280"}
+												/>
+											</View>
+										</View>
+										<View
+											style={{ paddingLeft: 50, marginTop: -38 }}
+											className="flex min-w-0 flex-1 justify-between space-x-4"
+										>
+											<View>
+												<Text className="text-lg text-gray-500">
+													{event.aboveTitle}
+												</Text>
+												<Text
+													style={{ marginTop: -6 }}
+													className={
+														event.type === "main"
+															? "text-lg font-medium text-gray-900"
+															: "text-lg font-medium text-gray-500"
+													}
+												>
+													{event.content}
+												</Text>
+												{event.belowTitle.length > 1 && (
+													<Text className="text-lg text-gray-600">
+														{event.belowTitle}
+													</Text>
+												)}
+											</View>
+											{/* <Text className="whitespace-nowrap text-right text-md text-gray-500">
+												{event.date}
+											</Text> */}
+										</View>
+									</View>
+								</View>
+							</View>
+						))}
+					</View>
+				</View>
+
+				{/* <Accordion
 					type="multiple"
 					collapsible
 					value={multiple}
@@ -258,7 +362,7 @@ export default function TabOneScreen() {
 							</AccordionContent>
 						</AccordionItem>
 					))}
-				</Accordion>
+				</Accordion> */}
 				{/* {duties.map((duty, i) => <Text key={i}>{JSON.stringify(duty)}</Text>)} */}
 			</ScrollView>
 		</View>
