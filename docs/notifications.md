@@ -5,7 +5,7 @@
 * 
 
 
-### ⌛ Max FDP Exceeded
+#### ⌛ Max FDP Exceeded
 *Ref OMA 7.1.5.4.1 Basic Max FDP for acclimitised crew member without the use of extensions.*   
 query = all maxFDPExceeded objects for date(s)    
 
@@ -15,7 +15,7 @@ Duty Period FDP: [maxFDPExceeded.flightDutyPeriodHHMM]
 
 
 ---
-### 🛌 Insufficent Rest Period between Duties  
+#### 🛌 Insufficent Rest Period between Duties  
 *Ref OMA 7.1.11.1 minimum rest period of 12 hours or duration of previous duty if longer.*  
 query = all restPeriodShort objects for date(s)    
 
@@ -26,7 +26,7 @@ Actual Report:   [dutyPeriod.reportTime]
 
 
 ---
-### 🏨 Eligible for Hotel 
+#### 🏨 Eligible for Hotel 
 *Ref OMA 7.1.9.4  Managing 18 hours of Wakefulness.*   
 query = is dutyPeriod.isEligibleForHotel true  
 
@@ -34,9 +34,10 @@ query = is dutyPeriod.isEligibleForHotel true
 Duty eligible for hotel 
 
 ---
-### 🗓️ Cumulative Time Limits Exceeded 
+#### 🗓️ Cumulative Time Limits Exceeded 
 *Ref 7.1.6 for FTl rules [totalTimeExceeded.scheme = 'FTL']*  
 *Ref 7.4.10.3 Roster B/FRM scheme* [totalTimeExceeded.scheme = 'FRM']*  
+query = is dutyPeriod.reportTime or dutyPeriod.debriefTime within cumulativeHoursExceeded.startTime and cumulativeHoursExceeded.endTime
  
 The [totalTimeExceeded.dutyType] period for [totalTimeExceeded.startDate] to [totalTimeExceeded.endDate]
 is in excess the [totalTimeExceeded.scheme] " " [totalTimeExceeded.rule] rule  

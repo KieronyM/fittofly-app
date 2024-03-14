@@ -100,8 +100,7 @@ export async function processRoster() {
 	//T otal Times:
 	//++++++++++++
 	//totalTimeDutyAndFlight();
-	const currentFlightAndDutyTotals =
-		await calculateCurrentFlightAndDutyTotals(dailyMinutes);
+	const currentFlightAndDutyTotals = await calculateCurrentFlightAndDutyTotals(dailyMinutes);
 	// console.log("currentFlighAndDutyTotals");
 	// console.log(currentFlightAndDutyTotals);
 	// console.log(dutyPeriods);
