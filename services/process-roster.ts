@@ -8,11 +8,21 @@ import { findMaxFDP } from "@/services/process-roster/findMaxFDP";
 import { setDutyType } from "@/services/process-roster/setDutyType";
 import { validateCumulativeTimeLimts } from "@/services/process-roster/validateCumulativeTimeLimits";
 import { validateRestPeriod } from "@/services/process-roster/validateRestPeriod";
+import { calculateCumulativeHours } from "@/services/process-roster/calculateCumulativeHoursForGivenDay";
 
 // data
 // This will eventually be a DB query given a start and end date and will return all duties within it
 
-export async function processRoster(upcomingDuties) {
+export async function processRoster(upcomingDuties: ({
+    dutyID: number;
+    dutyType: string;
+    origin: string;
+    destination: string;
+    reportTime: undefined;
+    debriefingTime: undefined;
+    startTime: undefined;
+    endTime: undefined;
+})[]) {
 	//++++++++++++++
 	// Duty Periods:
 	//++++++++++++++
@@ -20,9 +30,9 @@ export async function processRoster(upcomingDuties) {
 	// Will calculate number of sectors, start date/time, duty period &
 	// flight duty period (in hours), and identify if eligible for hotel
 	const dutyPeriods = calculateDutyPeriod(upcomingDuties);
-	// console.log("dutyPeriods");
-	//console.log(dutyPeriods);
-	//console.log(upcomingDuties);
+	 console.log("dutyPeriods");
+	console.log(dutyPeriods);
+	console.log(upcomingDuties);
 
 	//++++++++++++++++
 	// Set Combined Duty Type :
@@ -32,9 +42,9 @@ export async function processRoster(upcomingDuties) {
 	// Enables OMA 7.4.2.4/5/6/7/8/9/10/11 & 12
 	const disruptiveDuties = setDutyType(dutyPeriods);
 	//console.log("dutyPeriods");
-	//console.log(dutyPeriods);
-	// console.log("disruptiveDuties");
-	//console.log(disruptiveDuties);
+	// console.log(dutyPeriods);
+	 console.log("disruptiveDuties");
+	 console.log(disruptiveDuties);
 
 	//++++++++++++++
 	// Duty Blocks:
@@ -46,8 +56,8 @@ export async function processRoster(upcomingDuties) {
 	// Will calculate number of duty periods, start date/time, duty block (in hours) and flight duty block (in hours)
 	// writes duty block id to duty period
 	const dutyBlocks = await calculatedutyBlock(dutyPeriods);
-	// console.log("Duty Period Blocks");
-	// console.log(dutyBlocks);
+	 console.log("Duty Period Blocks");
+	 console.log(dutyBlocks);
 
 	//+++++++++++++++++++++++++++++
 	// Daily Flight & Duty Minutes:
@@ -56,10 +66,10 @@ export async function processRoster(upcomingDuties) {
 	// day where a duty took place
 	const { dailyMinutes, aggregatedDailyMinutes } =
 		await calculateDailyMinutes(dutyPeriods);
-	// console.log("DAILY MINUTES");
-	//console.log("DAILY MINUTES:", dailyMinutes);
-	// console.log('AGGREGATED DAILY MINUTES:')
-	// console.log(aggregatedDailyMinutes);
+	 console.log("DAILY MINUTES");
+	console.log("DAILY MINUTES:", dailyMinutes);
+	 console.log('AGGREGATED DAILY MINUTES:')
+	 console.log(aggregatedDailyMinutes);
 
 	//++++++++++++++++++++++++++++++++++
 	// Maximum Basic Flight Duty Period:
@@ -69,8 +79,8 @@ export async function processRoster(upcomingDuties) {
 	// for an acclimitised crew member
 	const maxFDPExceeded = await findMaxFDP(dutyPeriods);
 	//console.log(dutyPeriods);
-	// console.log("maxFDPExceeded");
-	//console.log(maxFDPExceeded);
+	 console.log("maxFDPExceeded");
+	console.log(maxFDPExceeded);
 
 	//++++++++++++++++++++++
 	// Validate Rest Period:
@@ -79,8 +89,8 @@ export async function processRoster(upcomingDuties) {
 	// Identifies inadequate rest periods between FDPs, 12 hour or duration of previous duty if longer
 	// Will return an array of rest period objects were of inadequate duration
 	const restPeriodShort = await validateRestPeriod(dutyPeriods);
-	//  console.log("restPeriodShort");
-	//  console.log(restPeriodShort);
+	  console.log("restPeriodShort");
+	  console.log(restPeriodShort);
 	// console.log(dutyPeriods);
 
 	//++++++++++++++++++++++++++++++++++++++++++++
@@ -93,16 +103,27 @@ export async function processRoster(upcomingDuties) {
 		dailyMinutes,
 		aggregatedDailyMinutes,
 	);
-	// console.log("totalTimeExceeded");
-	//console.log(totalTimeExceeded);
+	console.log("totalTimeExceeded");
+	console.log(totalTimeExceeded);
 
 	//++++++++++++
-	//T otal Times:
+	//Total Times:
 	//++++++++++++
 	//totalTimeDutyAndFlight();
 	const currentFlightAndDutyTotals = await calculateCurrentFlightAndDutyTotals(dailyMinutes);
-	// console.log("currentFlighAndDutyTotals");
-	// console.log(currentFlightAndDutyTotals);
-	// console.log(dutyPeriods);
-	return dutyPeriods;
+	console.log("currentFlighAndDutyTotals");
+	 console.log(currentFlightAndDutyTotals);
+	 console.log(dutyPeriods);
+
+	//+++++++++++++++++
+	//Cumulative Hours:
+	//+++++++++++++++++
+	// Accepts the day sent and calculates the flight and duty hours for defined cumulative time limit periods
+	// (see cumulative-limits.md) ending on the day
+
+	//const cumulativeFlightAndDutyHours = await calculateCumulativeHours (dailyMinutes, new Date());
+	const cumulativeFlightAndDutyHours = await calculateCumulativeHours (dailyMinutes, new Date("2024-04-11T10:30:00Z"));
+		console.log("cumulative hours for ", "date");
+	 console.log(cumulativeFlightAndDutyHours);
+
 }

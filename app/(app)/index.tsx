@@ -179,7 +179,7 @@ export default function TabOneScreen() {
 					};
 				});
 
-				console.log(dutyPeriodWithDuties);
+				// console.log(dutyPeriodWithDuties);
 
 				// - Then generate the UI for each duty period
 				// TODO: Make this dependent on date
@@ -249,7 +249,7 @@ export default function TabOneScreen() {
 					belowTitle: "",
 				});
 
-				console.log(formattedDuties);
+				// console.log(formattedDuties);
 
 				setEvents(formattedDuties);
 

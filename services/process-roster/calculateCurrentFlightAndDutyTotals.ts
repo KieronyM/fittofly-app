@@ -14,7 +14,6 @@ import { dailyMinutes } from "@/types";
 import { currentFlightAndDutyTotals } from "@/types";
 
 
-//calculate the sum of duty minutes for an allocated date range from dailyminutes
 /**
  * calculate the sum of duty minutes for an allocated date range from dailyminutes
 
@@ -30,7 +29,10 @@ function getTotalDutyMinsInRange(dailyMinutes: dailyMinutes[], startDate: Date, 
     return sumOfDutyMinutes;
 }
 
-//calculate the sum of flight minutes for an allocated date range from dailyminutes
+/**
+ * calculate the sum of flight minutes for an allocated date range from dailyminutes
+
+ */
 function getTotalFlightMinsInRange(dailyMinutes: dailyMinutes[], startDate: Date, endDate: Date): number {
     const filteredDailyMinutes = dailyMinutes.filter((day) => new Date(day.dayDate) >= new Date(startDate)
         && new Date(day.dayDate) <= new Date(endDate))

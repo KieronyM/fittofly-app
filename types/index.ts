@@ -112,3 +112,66 @@ export interface currentFlightAndDutyTotals {
     dutyMinutes?: number;
     flightMinutes?: number;
 };
+export interface cumulativeFlightAndDutyHours {
+    givenDate: string;
+    startDate: string;
+    period: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
+export interface cumulative7DayHours {
+    period: '7 Day';
+    startDate: string;
+    endDate: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
+export interface cumulative14DayHours {
+    period: '14 Day';
+    startDate: string;
+    endDate: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
+export interface cumulative28DayHours {
+    period: '28 Day';
+    startDate: string;
+    endDate: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
+export interface cumulative12WeekHours {
+    period: '12 Week';
+    startDate: string;
+    endDate: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
+export interface cumulative6MonthHours {
+    period: '6 Month';
+    startDate: string;
+    endDate: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
+export interface cumulative9MonthHours {
+    period: '9 Month';
+    startDate: string;
+    endDate: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
+export interface cumulative12MonthHours {
+    period: '12 Month';
+    startDate: string;
+    endDate: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
+export interface cumulative1YearHours {
+    period: '1 Year';
+    startDate: string;
+    endDate: string;
+    dutyMinutes?: number;
+    flightMinutes?: number;
+};
