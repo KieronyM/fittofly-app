@@ -6,7 +6,7 @@ export default function TabOneScreen() {
 			<Text className="text-4xl text-foreground font-extrabold tracking-tight lg:text-5xl">
 				FAQs
 			</Text>
-			<Text className="text-sm text-muted-foreground text-center">
+			<Text className="text-md text-muted-foreground text-center">
 				FAQs will go here
 			</Text>
 		</View>

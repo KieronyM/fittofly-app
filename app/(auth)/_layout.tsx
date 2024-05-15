@@ -4,9 +4,10 @@ import React from "react";
 export default function AuthLayout() {
 	return (
 		<Stack
-			screenOptions={{
+			screenOptions={({route}) => ({
 				headerShown: false,
-			}}
+				display: "none",
+			})}
 		>
 			<Stack.Screen name="index" />
 			<Stack.Screen name="sign-up" />

@@ -149,14 +149,14 @@ export function Feed({ timeline }: { timeline: Timeline[] }) {
 					// 					</View>
 					// 					<View className="flex min-w-0 flex-1 justify-between space-x-4 pt-1">
 					// 						<View>
-					// 							<View className="text-sm text-gray-500 inline">
+					// 							<View className="text-md text-gray-500 inline">
 					// 								{event.titlePrefix}{" "}
 					// 								<Text className="font-medium text-gray-900">
 					// 									{event.title}
 					// 								</Text>
 					// 							</View>
 					// 						</View>
-					// 						<View className="whitespace-nowrap text-right text-sm text-gray-500">
+					// 						<View className="whitespace-nowrap text-right text-md text-gray-500">
 					// 							{/* {event.expandable ? (
 					// 								<Button>
 					// 									<DoubleArrowDownIcon className="h-4 w-4" />

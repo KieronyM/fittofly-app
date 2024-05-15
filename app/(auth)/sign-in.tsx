@@ -49,11 +49,8 @@ export default function SignIn() {
 			}}
 		>
 			<View className="flex-1">
-				<Text className="text-4xl text-foreground font-extrabold tracking-tight lg:text-5xl self-start">
+				<Text className="text-4xl text-foreground font-extrabold tracking-tight lg:text-5xl self-start mb-5">
 					Sign In
-				</Text>
-				<Text className="text-sm text-muted-foreground self-start mb-5">
-					to continue to Expo Supabase Starter
 				</Text>
 				<Form {...form}>
 					<View className="gap-4">
@@ -91,7 +88,7 @@ export default function SignIn() {
 			</View>
 			<View className="gap-y-4">
 				<Button
-					size="default"
+					size="lg"
 					variant="default"
 					onPress={form.handleSubmit(onSubmit)}
 				>
@@ -102,7 +99,7 @@ export default function SignIn() {
 					)}
 				</Button>
 				<Text
-					className="text-sm text-muted-foreground text-center"
+					className="text-md text-muted-foreground text-center"
 					onPress={() => {
 						router.replace("/sign-up");
 					}}

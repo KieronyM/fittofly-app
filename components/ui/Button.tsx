@@ -17,9 +17,9 @@ const buttonVariants = cva("flex-row items-center justify-center rounded-md", {
 			link: "",
 		},
 		size: {
-			default: "h-10 px-4 py-2",
+			default: "h-12 px-6 py-2",
 			sm: "h-9 rounded-md px-3",
-			lg: "h-11 rounded-md px-8",
+			lg: "h-12 rounded-md px-10",
 		},
 	},
 	defaultVariants: {
@@ -39,9 +39,9 @@ const buttonTextVariants = cva("font-medium", {
 			link: "text-primary underline-offset-4 underline",
 		},
 		size: {
-			default: "text-sm font-medium",
-			sm: "text-sm font-medium",
-			lg: "text-sm font-medium",
+			default: "text-md font-medium",
+			sm: "text-md font-medium",
+			lg: "text-lg font-medium",
 		},
 	},
 	defaultVariants: {

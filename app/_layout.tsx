@@ -49,7 +49,7 @@ function RootLayoutNav() {
 			<SafeAreaProvider>
 				<StatusBar style="light" />
 				<Stack>
-					<Stack.Screen name="(auth)" />
+					<Stack.Screen name="(auth)" options={{headerShown: false}}/>
 					<Stack.Screen
 						name="(app)"
 						options={{

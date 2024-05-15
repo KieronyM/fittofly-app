@@ -103,7 +103,7 @@ const AccordionContent = React.forwardRef<
 	return (
 		<AccordionPrimitive.Content
 			className={cn(
-				"overflow-hidden text-sm web:transition-all",
+				"overflow-hidden text-md web:transition-all",
 				isExpanded ? "web:animate-accordion-down" : "web:animate-accordion-up",
 			)}
 			ref={ref}

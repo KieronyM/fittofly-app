@@ -6,7 +6,7 @@ export default function TabThreeScreen() {
 			<Text className="text-4xl text-foreground font-extrabold tracking-tight lg:text-5xl">
 				Stats Page
 			</Text>
-			<Text className="text-sm text-muted-foreground text-center">
+			<Text className="text-md text-muted-foreground text-center">
 				Stats will go here
 			</Text>
 		</View>

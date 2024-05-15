@@ -68,7 +68,7 @@ export default function SignUp() {
 				<Text className="text-4xl text-foreground font-extrabold tracking-tight lg:text-5xl self-start">
 					Sign Up
 				</Text>
-				<Text className="text-sm text-muted-foreground self-start mb-5">
+				<Text className="text-md text-muted-foreground self-start mb-5">
 					to continue to Expo Supabase Starter
 				</Text>
 				<Form {...form}>
@@ -132,7 +132,7 @@ export default function SignUp() {
 					)}
 				</Button>
 				<Text
-					className="text-sm text-muted-foreground text-center"
+					className="text-md text-muted-foreground text-center"
 					onPress={() => {
 						router.replace("/sign-in");
 					}}
