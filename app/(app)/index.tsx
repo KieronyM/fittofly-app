@@ -147,7 +147,7 @@ export default function TabOneScreen() {
 				const from = subDays(new Date(), 0);
 				// To the end of the roster generation period, so
 				// 31st of the next month after the 17th
-				const to = addDays(new Date(), 16);
+				const to = addDays(new Date(), 46);
 				const calEvents = await Calendar.getEventsAsync(
 					[calendarId, mumsCalendarId, iosSimCalendarId],
 					// allCalendarIds,
@@ -155,17 +155,14 @@ export default function TabOneScreen() {
 					to,
 				);
 
-				// console.log(calEvents);
-
-				let upcomingDuties = calendarToDuties(calEvents);
-
-				// Remove any undefined events
-				upcomingDuties = upcomingDuties.filter(function (element) {
-					return element !== undefined;
-				});
+				const upcomingDuties = calendarToDuties(calEvents);
 
 				// Calculate duty periods from duties
-				const processedDuties = await processRoster(upcomingDuties);
+				try {
+					const processedDuties = await processRoster(upcomingDuties);
+				} catch (e) {
+					console.error(e);
+				}
 
 				// - Combine the duties into the duty periods
 				const dutyPeriodWithDuties = processedDuties.map((processedDuty) => {
@@ -179,12 +176,10 @@ export default function TabOneScreen() {
 					};
 				});
 
-				// console.log(dutyPeriodWithDuties);
-
 				// - Then generate the UI for each duty period
 				// TODO: Make this dependent on date
 				// FOR NOW, use the first one
-				const selectedDutyPeriod = dutyPeriodWithDuties[0];
+				const selectedDutyPeriod = dutyPeriodWithDuties[4];
 
 				const formattedDuties = [];
 
@@ -207,7 +202,11 @@ export default function TabOneScreen() {
 					formattedDuties.push({
 						id: duty?.dutyID,
 						type: "main",
-						content: `${getNameFromIATACode(duty?.origin)} (${duty?.origin}) to ${getNameFromIATACode(duty?.destination)} (${duty?.destination})`,
+						content: `${getNameFromIATACode(
+							duty?.origin,
+						)} (${duty?.origin}) to ${getNameFromIATACode(
+							duty?.destination,
+						)} (${duty?.destination})`,
 						aboveTitle: `${formatInTimeZone(
 							new Date(duty?.startTime || 0),
 							"Europe/London",
@@ -249,7 +248,8 @@ export default function TabOneScreen() {
 					belowTitle: "",
 				});
 
-				// console.log(formattedDuties);
+				console.log("FORMATTED DUTIES");
+				console.log(formattedDuties);
 
 				setEvents(formattedDuties);
 

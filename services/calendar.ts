@@ -1,7 +1,11 @@
 import { Event } from "expo-calendar";
 
+import { IRawDuty } from "@/types/duties";
+
 export function calendarToDuties(calendarEvents: Event[]) {
-	const parsedEvents = calendarEvents.map((calendarEvent, index) => {
+	const parsedEvents: IRawDuty[] = [];
+
+	calendarEvents.forEach((calendarEvent, index) => {
 		// Do not handle all day events
 		if (!calendarEvent.allDay) {
 			// Housekeeping to make sure these are in string format
@@ -32,10 +36,10 @@ export function calendarToDuties(calendarEvents: Event[]) {
 					(line) => line !== "" && line !== "---Created by the eCrew app---",
 				);
 
-				let debriefingTime = undefined;
-				let reportTime = undefined;
-				let startTime = undefined;
-				let endTime = undefined;
+				let debriefingTime = "";
+				let reportTime = "";
+				let startTime = "";
+				let endTime = "";
 
 				parsedLines.find((line) => {
 					if (line.includes("Reporting time:")) {
@@ -105,7 +109,7 @@ export function calendarToDuties(calendarEvents: Event[]) {
 					dutyType: "Flight",
 					origin,
 					destination,
-					reportTime,
+					reportTime: reportTime !== "" ? reportTime : startTime,
 					debriefingTime,
 					startTime,
 					endTime,
@@ -118,7 +122,7 @@ export function calendarToDuties(calendarEvents: Event[]) {
 					duty[key] === undefined ? delete duty[key] : {},
 				);
 
-				return duty;
+				parsedEvents.push(duty);
 			}
 
 			// Else if the event is a standby
@@ -137,10 +141,10 @@ export function calendarToDuties(calendarEvents: Event[]) {
 					(line) => line !== "" && line !== "---Created by the eCrew app---",
 				);
 
-				let debriefingTime = undefined;
-				let reportTime = undefined;
-				let startTime = undefined;
-				let endTime = undefined;
+				let debriefingTime = "";
+				let reportTime = "";
+				let startTime = "";
+				let endTime = "";
 
 				parsedLines.find((line) => {
 					if (line.includes("Reporting time:")) {
@@ -223,7 +227,7 @@ export function calendarToDuties(calendarEvents: Event[]) {
 					duty[key] === undefined ? delete duty[key] : {},
 				);
 
-				return duty;
+				parsedEvents.push(duty);
 			}
 		}
 	});

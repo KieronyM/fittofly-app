@@ -9,7 +9,6 @@ import {
 } from "lucide-react-native";
 
 import { getNameFromIATACode } from "./airport-codes";
-import { calculateTimeDifference } from "./time";
 
 import {
 	duty,
@@ -38,92 +37,92 @@ export function addDutiesToDutyPeriods(
 	return dutyPeriodsWithDuties;
 }
 
-export function calculateDutyPeriod(upcomingDuties: duty[]) {
-	// Create an empty array for duty periods
-	const dutyPeriod = [];
+// export function calculateDutyPeriod(upcomingDuties: duty[]) {
+// 	// Create an empty array for duty periods
+// 	const dutyPeriod = [];
 
-	//initailise variables for loop
-	let dutyPeriodID = 0;
-	let DPDutyIDs = [];
-	let sectorCount = 0;
-	let DPStartTime: string | undefined = "";
-	let DPEndTime: string | undefined = "";
-	let DPReportTime = "";
-	let DPDebriefTime = "";
-	let timeDiff;
+// 	//initailise variables for loop
+// 	let dutyPeriodID = 0;
+// 	let DPDutyIDs = [];
+// 	let sectorCount = 0;
+// 	let DPStartTime: string | undefined = "";
+// 	let DPEndTime: string | undefined = "";
+// 	let DPReportTime = "";
+// 	let DPDebriefTime = "";
+// 	let timeDiff;
 
-	// loop through duties
-	for (const duty of upcomingDuties) {
-		// populated report time indicates first duty of the period
-		if (duty.reportTime != null) {
-			dutyPeriodID++;
-			DPStartTime = duty.startTime;
-			DPReportTime = duty.reportTime;
-			// console.log(duty.dutyID, " reporting time is not empty");
-		}
+// 	// loop through duties
+// 	for (const duty of upcomingDuties) {
+// 		// populated report time indicates first duty of the period
+// 		if (duty.reportTime != null) {
+// 			dutyPeriodID++;
+// 			DPStartTime = duty.startTime;
+// 			DPReportTime = duty.reportTime;
+// 			// console.log(duty.dutyID, " reporting time is not empty");
+// 		}
 
-		// duty within the period
-		// TODO: These ifs cn be cleaned into an if/else block for efficiency
-		if (duty.debriefingTime == null) {
-			//console.log(duty.dutyID, " debrief time empty");
-			sectorCount++;
-			DPDutyIDs.push(duty.dutyID);
-		}
+// 		// duty within the period
+// 		// TODO: These ifs cn be cleaned into an if/else block for efficiency
+// 		if (duty.debriefingTime == null) {
+// 			//console.log(duty.dutyID, " debrief time empty");
+// 			sectorCount++;
+// 			DPDutyIDs.push(duty.dutyID);
+// 		}
 
-		// populated debrief time indicates last duty of the period
-		else {
-			sectorCount++;
-			DPDutyIDs.push(duty.dutyID);
-			DPEndTime = duty.endTime;
-			DPDebriefTime = duty.debriefingTime;
+// 		// populated debrief time indicates last duty of the period
+// 		else {
+// 			sectorCount++;
+// 			DPDutyIDs.push(duty.dutyID);
+// 			DPEndTime = duty.endTime;
+// 			DPDebriefTime = duty.debriefingTime;
 
-			//duty period = time required to report or commence a duty and ends when the person is free of all duties including post flight duty
-			//flight duty period = commences when at the report for duty and finishes when the aircraft comes to rest and engines are shut down on the last sector
+// 			//duty period = time required to report or commence a duty and ends when the person is free of all duties including post flight duty
+// 			//flight duty period = commences when at the report for duty and finishes when the aircraft comes to rest and engines are shut down on the last sector
 
-			//Calculate duty period: duty period = debrief time - reporting time
-			timeDiff = calculateTimeDifference(
-				new Date(DPReportTime),
-				new Date(DPDebriefTime),
-			); // calling the function calculate time difference
-			//console.log(`The difference is ${timeDiff.hours} hours and ${timeDiff.minutes} minutes.`);
-			const dutyPeriodHHMM = `${timeDiff.hours}:${timeDiff.minutes}`; //2 different ways to write to append content to a string, also   let string1 = timeDiff.hours + ':' + timeDiff.minutes
+// 			//Calculate duty period: duty period = debrief time - reporting time
+// 			timeDiff = calculateTimeDifference(
+// 				new Date(DPReportTime),
+// 				new Date(DPDebriefTime),
+// 			); // calling the function calculate time difference
+// 			//console.log(`The difference is ${timeDiff.hours} hours and ${timeDiff.minutes} minutes.`);
+// 			const dutyPeriodHHMM = `${timeDiff.hours}:${timeDiff.minutes}`; //2 different ways to write to append content to a string, also   let string1 = timeDiff.hours + ':' + timeDiff.minutes
 
-			//Calculate flight duty period:  flight duty = end time - reporting time
-			timeDiff = calculateTimeDifference(
-				new Date(DPReportTime),
-				new Date(DPEndTime || ""),
-			);
-			const flightDutyPeriodHHMM = `${timeDiff.hours}:${timeDiff.minutes}`;
+// 			//Calculate flight duty period:  flight duty = end time - reporting time
+// 			timeDiff = calculateTimeDifference(
+// 				new Date(DPReportTime),
+// 				new Date(DPEndTime || ""),
+// 			);
+// 			const flightDutyPeriodHHMM = `${timeDiff.hours}:${timeDiff.minutes}`;
 
-			//writes to array dutyPeriod
-			//[{ dutyPeriodID: 111, sectors: 2, startTime: 2023-09-19T09:00:00, dutyPeriodHHMM: 14:00, flightDutyPeriodHHMM: 13:45, dutyIDs: [1, 2, 3]}]
-			dutyPeriod.push({
-				dutyPeriodID,
-				sectors: sectorCount,
-				startTime: DPStartTime,
-				reportTime: DPReportTime,
-				endTime: DPEndTime,
-				debriefTime: DPDebriefTime,
-				dutyPeriodHHMM,
-				flightDutyPeriodHHMM,
-				dutyIDs: DPDutyIDs,
-				//DPReportTimeHHM
-			});
+// 			//writes to array dutyPeriod
+// 			//[{ dutyPeriodID: 111, sectors: 2, startTime: 2023-09-19T09:00:00, dutyPeriodHHMM: 14:00, flightDutyPeriodHHMM: 13:45, dutyIDs: [1, 2, 3]}]
+// 			dutyPeriod.push({
+// 				dutyPeriodID,
+// 				sectors: sectorCount,
+// 				startTime: DPStartTime,
+// 				reportTime: DPReportTime,
+// 				endTime: DPEndTime,
+// 				debriefTime: DPDebriefTime,
+// 				dutyPeriodHHMM,
+// 				flightDutyPeriodHHMM,
+// 				dutyIDs: DPDutyIDs,
+// 				//DPReportTimeHHM
+// 			});
 
-			//reset for next duty period
-			sectorCount = 0;
-			DPDutyIDs = [];
-			DPStartTime = "0000-00-00T00:00:00";
-			DPEndTime = "0000-00-00T00:00:00";
-			DPReportTime = "0000-00-00T00:00:00";
-			DPDebriefTime = "0000-00-00T00:00:00";
-			//console.log(duty.dutyID, "debrief time is not empty");
-			//dutyPeriod.push(sectorCount, duty.dutyID); //writes to array dutyPeriod
-		}
-	}
-	//console.log(dutyPeriod, 'dp'); //displays array dutyPeriod
-	return dutyPeriod;
-}
+// 			//reset for next duty period
+// 			sectorCount = 0;
+// 			DPDutyIDs = [];
+// 			DPStartTime = "0000-00-00T00:00:00";
+// 			DPEndTime = "0000-00-00T00:00:00";
+// 			DPReportTime = "0000-00-00T00:00:00";
+// 			DPDebriefTime = "0000-00-00T00:00:00";
+// 			//console.log(duty.dutyID, "debrief time is not empty");
+// 			//dutyPeriod.push(sectorCount, duty.dutyID); //writes to array dutyPeriod
+// 		}
+// 	}
+// 	//console.log(dutyPeriod, 'dp'); //displays array dutyPeriod
+// 	return dutyPeriod;
+// }
 
 export function formatDutyPeriods(dutyPeriods: dutyPeriod[]) {
 	const formattedDutyPeriods: formattedDutyPeriod[] = [];

@@ -1,5 +1,56 @@
 import { LucideIcon } from "lucide-react-native";
 
+export interface IRawDuty {
+	dutyID: number;
+	dutyType: string;
+	origin: string;
+	destination: string;
+	reportTime: string;
+	debriefingTime: string;
+	startTime: string;
+	endTime: string;
+}
+
+export interface ICalculatedDutyPeriod {
+	dutyPeriodID: number;
+	startTime: string;
+	endTime: string;
+	reportTime: string;
+	debriefTime: string;
+	sectorCount: number;
+	dutyIDs: number[];
+	dutyPeriodHHMM: string;
+	flightDutyPeriodHHMM: string;
+	earliestNextDPStartTime: string;
+	earliestDPStartTime: string;
+	minimumRestPeriodMinutes: number;
+	isEligibleForHotel: boolean;
+}
+
+export interface IDisruptiveSchedule {
+	disruptiveSchedule: {
+		isDisruptiveSchedule: boolean;
+		dutyType: string;
+		isEarlyStart: boolean;
+		isLateFinish: boolean;
+		isNightDuty: boolean;
+		isNightStart: boolean;
+		isEzyEarlyStart: boolean;
+		isEzyLateFinish: boolean;
+		isEzyNightFinish: boolean;
+		isEzyDisruptiveDuty: boolean;
+		isMorningDuty: boolean;
+		isEveningDuty: boolean;
+		isDualDuty: boolean;
+		isNeutralDuty: boolean;
+	};
+}
+
+// Combines the two together
+export interface IDutyPeriodsDisruptiveSchedule
+	extends ICalculatedDutyPeriod,
+		IDisruptiveSchedule {}
+
 export interface duty {
 	dutyPeriodID?: number;
 	dutyID: number;
