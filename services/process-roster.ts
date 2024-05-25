@@ -9,7 +9,7 @@ import { findMaxFDP } from "@/services/process-roster/findMaxFDP";
 import { setDutyType } from "@/services/process-roster/setDutyType";
 import { validateCumulativeTimeLimts } from "@/services/process-roster/validateCumulativeTimeLimits";
 import { validateRestPeriod } from "@/services/process-roster/validateRestPeriod";
-import { IRawDuty } from "@/types/duties";
+import { IRawDuty } from "@/types/interfaces";
 
 // data
 // This will eventually be a DB query given a start and end date and will return all duties within it

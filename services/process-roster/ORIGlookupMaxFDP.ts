@@ -4,9 +4,8 @@ import { supabase } from "@/utils/supabase";
 //----------------------------------------------------------------------
 // RUN
 
-export async function lookupMaxFDP(crewType: string, dutyStartTime: string, sectorCount: number) {
-  // Crew Type, Start time and Sector Counts come in as variable parameters.
-  // Crew Type can be ""uk_pilot_oma","CAP 371 Tabe A","I.2" or "J.1" 
+export async function lookupMaxFDP(dutyStartTime: string, sectorCount: number) {
+  // Start time and sector counts come in as variables.
   // Duty start time must be in format hh:mm
   // Sector count must be a number between 1 and 10
 
@@ -14,11 +13,11 @@ export async function lookupMaxFDP(crewType: string, dutyStartTime: string, sect
   let { data, error } = await supabase
     // This is the table name
     .from("ezy_max_fdp")
-    // This is the column that we want
+    // This is teh column that we want
     .select("max_fdp")
     // Crew type - we can change these with different airlines/rules
     // e.g the more restrictive BALPA ones will be "uk_pilot_balpa"
-    .eq("crew_type", crewType)
+    .eq("crew_type", "uk_pilot_oma")
     // Use the sector count from earlier
     .eq("sector_count", sectorCount)
     // period_start_time is less than or equal to dutyStartTime

@@ -15,6 +15,7 @@ export async function findMaxFDP(upcomingDutyPeriods: dutyPeriod[]) {
 
   // Create an empty array for duty periods where max FDP is exceeded  
   const maxFDPExceeded = [];
+  const crewType: string = "uk_pilot_oma";
 
   //initailise variables for loop
   let DPReportTimeHHMM;
@@ -28,7 +29,7 @@ export async function findMaxFDP(upcomingDutyPeriods: dutyPeriod[]) {
     //lookup the maxFDP
     DPReportTimeHHMM = dutyPeriod.reportTime.substring(11, 16); //gets hours & mins in a string
     //console.log(DPReportTimeHHMM);
-    maxFDP = (await lookupMaxFDP(DPReportTimeHHMM, dutyPeriod.sectors)).slice(0, -3);
+    maxFDP = (await lookupMaxFDP(crewType, DPReportTimeHHMM, dutyPeriod.sectors)).slice(0, -3);
     maxFDPMins = convertTimeToMinutes(maxFDP);
 
     flightDutyPeriodMins = convertTimeToMinutes(dutyPeriod.flightDutyPeriodHHMM);

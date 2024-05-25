@@ -18,7 +18,7 @@ import {
 // services
 import { calculateTimeDifference } from "@/services/process-roster/calculateTimeDifference";
 // types;
-import { ICalculatedDutyPeriod, IRawDuty } from "@/types/duties";
+import { ICalculatedDutyPeriod, IRawDuty } from "@/types/interfaces";
 // utils
 import { convertTimeToMinutes } from "@/utils/times";
 

@@ -1,6 +1,6 @@
 import { Event } from "expo-calendar";
 
-import { IRawDuty } from "@/types/duties";
+import { IRawDuty } from "@/types/interfaces";
 
 export function calendarToDuties(calendarEvents: Event[]) {
 	const parsedEvents: IRawDuty[] = [];
