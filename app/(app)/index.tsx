@@ -1,65 +1,18 @@
 import HorizontalDatepicker from "@awrminkhodaei/react-native-horizontal-datepicker";
-import { addDays, subDays } from "date-fns";
-import { format, formatInTimeZone } from "date-fns-tz";
-import * as Calendar from "expo-calendar";
 import { LinearGradient } from "expo-linear-gradient";
 import {
 	ArrowLeftRight,
 	LogInIcon,
 	LogOutIcon,
-	LucideIcon,
 	PlaneIcon,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ScrollView, Text, View } from "react-native";
-
 import CloudsImage from "@/components/creatives/clouds";
 import EZYA320 from "@/components/creatives/ezy-a320";
 import { cn } from "@/lib/utils";
-import { getNameFromIATACode } from "@/services/airport-codes";
-import { calendarToDuties } from "@/services/calendar";
-import { processRoster } from "@/services/process-roster";
-
-type TEvent = {
-	startDate: Date;
-	endDate: Date;
-	dutyPeriodID: number;
-	dateString: string;
-	timeline: {
-		id: number;
-		type: string;
-		preTitle?: string;
-		title: string;
-		isFlight?: boolean;
-		//  datetime: string;
-		icon: LucideIcon;
-		iconBackground: string;
-		subtitle?: string;
-		//  date?: string;
-		expandable?: boolean;
-		titlePrefix?: string;
-	}[];
-};
 
 export default function TabOneScreen() {
-	const [events, setEvents] = useState<TEvent[]>([]);
-	const [duties, setDuties] = useState<
-		{
-			dutyPeriodID: number;
-			sectors: number;
-			startTime: string;
-			reportTime: string;
-			endTime: string;
-			debriefTime: string;
-			dutyPeriodHHMM: string;
-			flightDutyPeriodHHMM: string;
-			earliestDPStartTime: Date;
-			earliestNextDPStartTime: Date;
-			isEligibleForHotel: boolean;
-			dutyIDs: number[];
-		}[]
-	>([]);
-
 	const timeline = [
 		{
 			id: 1,
@@ -126,138 +79,6 @@ export default function TabOneScreen() {
 		},
 	];
 
-	// This will need to be passed the correct data eventually
-	useEffect(() => {
-		(async () => {
-			const { status } = await Calendar.requestCalendarPermissionsAsync();
-			if (status === "granted") {
-				const calendars = await Calendar.getCalendarsAsync(
-					Calendar.EntityTypes.EVENT,
-				);
-				// console.log(calendars);
-				const calendarId = "81715A91-086D-489F-B587-42B940CBD7D8";
-				const mumsCalendarId = "B94BAD5D-87A3-4369-B06E-2AC5EB316BDE";
-				const iosSimCalendarId = "C7856478-1AA3-4D6A-9563-A375108565A5";
-
-				// const allCalendarIds = calendars.map((cal) => cal.id);
-
-				// console.log(allCalendarIds);
-
-				// Initially today
-				const from = subDays(new Date(), 0);
-				// To the end of the roster generation period, so
-				// 31st of the next month after the 17th
-				const to = addDays(new Date(), 46);
-				const calEvents = await Calendar.getEventsAsync(
-					[calendarId, mumsCalendarId, iosSimCalendarId],
-					// allCalendarIds,
-					from,
-					to,
-				);
-
-				const upcomingDuties = calendarToDuties(calEvents);
-
-				// Calculate duty periods from duties
-				try {
-					const processedDuties = await processRoster(upcomingDuties);
-				} catch (e) {
-					console.error(e);
-				}
-
-				// - Combine the duties into the duty periods
-				const dutyPeriodWithDuties = processedDuties.map((processedDuty) => {
-					const duties = processedDuty.dutyIDs.map((dutyId) =>
-						upcomingDuties.find((duty) => duty?.dutyID === dutyId),
-					);
-
-					return {
-						...processedDuty,
-						duties,
-					};
-				});
-
-				// - Then generate the UI for each duty period
-				// TODO: Make this dependent on date
-				// FOR NOW, use the first one
-				const selectedDutyPeriod = dutyPeriodWithDuties[4];
-
-				const formattedDuties = [];
-
-				// First do a report
-				formattedDuties.push({
-					id: 0,
-					type: "main",
-					icon: LogInIcon,
-					iconBackground: "bg-sky-500",
-					aboveTitle: formatInTimeZone(
-						new Date(selectedDutyPeriod.reportTime),
-						"Europe/London",
-						"HH:mm",
-					),
-					content: "Report",
-					belowTitle: "",
-				});
-
-				selectedDutyPeriod.duties.forEach((duty, i) => {
-					formattedDuties.push({
-						id: duty?.dutyID,
-						type: "main",
-						content: `${getNameFromIATACode(
-							duty?.origin,
-						)} (${duty?.origin}) to ${getNameFromIATACode(
-							duty?.destination,
-						)} (${duty?.destination})`,
-						aboveTitle: `${formatInTimeZone(
-							new Date(duty?.startTime || 0),
-							"Europe/London",
-							"HH:mm",
-						)} - ${formatInTimeZone(
-							new Date(duty?.endTime || 0),
-							"Europe/London",
-							"HH:mm",
-						)}`,
-						belowTitle: "U2 1235 | 2 hrs 25 mins | G-EZTL (A320)",
-						icon: PlaneIcon,
-						iconBackground: "bg-green-500",
-					});
-
-					if (i < selectedDutyPeriod.duties.length - 1)
-						formattedDuties.push({
-							id: duty?.dutyID * 99,
-							type: "between",
-							content: "Turnaround - 35 mins",
-							aboveTitle: "",
-							belowTitle: "",
-							icon: ArrowLeftRight,
-							iconBackground: "bg-white",
-						});
-				});
-
-				// Finish with an off duty time
-				formattedDuties.push({
-					id: 999999,
-					type: "main",
-					icon: LogOutIcon,
-					iconBackground: "bg-sky-500",
-					aboveTitle: formatInTimeZone(
-						new Date(selectedDutyPeriod.debriefTime),
-						"Europe/London",
-						"HH:mm",
-					),
-					content: "Off Duty",
-					belowTitle: "",
-				});
-
-				console.log("FORMATTED DUTIES");
-				console.log(formattedDuties);
-
-				setEvents(formattedDuties);
-
-				// setDuties(upcomingDuties);
-			}
-		})();
-	}, []);
-
 	// ------------------------------------------------------------
 
 	// https://gradient.page/css/ui-gradients
@@ -279,6 +100,9 @@ export default function TabOneScreen() {
 		night: ["#000428", "#004e92"],
 	};
 
+	// TODO: Replace top with map
+	// TODO: Move this header to the notification page
+	
 	return (
 		<View className="flex-1 bg-background">
 			<ScrollView className="gap-y-4" alwaysBounceVertical={false}>
@@ -345,7 +169,7 @@ export default function TabOneScreen() {
 
 				<View className="flow-root">
 					<View role="list" className="-mb-8 p-4">
-						{events.map((event, eventIdx) => (
+						{timeline.map((event, eventIdx) => (
 							<View key={event.id}>
 								<View className="relative pb-8">
 									{eventIdx !== timeline.length - 1 ? (
