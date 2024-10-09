@@ -16,7 +16,7 @@ import {
 	dutyPeriod,
 	formattedDutyPeriod,
 	timeline,
-} from "@/types/duties";
+} from "@/types/interfaces";
 
 export function addDutiesToDutyPeriods(
 	dutyPeriods: dutyPeriod[],

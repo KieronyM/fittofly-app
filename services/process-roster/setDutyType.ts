@@ -49,7 +49,7 @@ import {
 import {
 	ICalculatedDutyPeriod,
 	IDutyPeriodsDisruptiveSchedule,
-} from "@/types/duties";
+} from "@/types/interfaces";
 import { convertTimeToMinutes } from "@/utils/times";
 
 /**
@@ -189,7 +189,7 @@ export function setDutyType(upcomingDutyPeriods: ICalculatedDutyPeriod[]) {
 			disruptiveSchedule.dutyType = "EZY Night Finish";
 		}
 
-		// NIGHTSTART
+		// NIGHT START
 		// NightStart will not be false if EarlyStart is true
 		if (!isEarlyStart) {
 			if (

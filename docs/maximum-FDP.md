@@ -1,7 +1,7 @@
 # Maximum FDP
 The maximum daily FDP without the use of extensions for acclimitaized crew members shall be in accordance with the following table:
 
-
+*Ref 7.1.5.4.1*
 | Start of FDP(Reference Time) | 1-2 Sectors | 3 Sectors | 4 Sectors| 5 Sectors | 6 Sectors | 7 Sectors | 8 Sectors| 9 Sectors| 10 Sectors|
 |----------|----------|----------|----------|----------|----------|----------|----------|----------|-----------|
 | 06:00 - 13:29 | 13:00 | 12:30 | 12:00 | 11:30 | 11:00 | 10:30 | 10:00 | 09:30 | 09:00 |
@@ -18,3 +18,7 @@ The maximum daily FDP without the use of extensions for acclimitaized crew membe
 | 05:30 - 05:44 | 12:30 | 12:00 | 11:30 | 11:00 | 10:30 | 10:00 | 09:30 | 09:00 | 09:00 |
 | 05:45 - 05:59 | 12:45 | 12:15 | 11:45 | 11:15 | 10:45 | 10:15 | 09:45 | 09:15 | 09:00 |
 
+*Ref 7.1.9.4.1.1*
+If an assigned FDP starts during airport standby:
+1. The maximum FDP is reduced by the time spent on standby in excess of 4 hours
+2. The maximum combined duration of airport standby and assigned FDP is 16 hours

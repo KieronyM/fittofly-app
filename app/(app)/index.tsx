@@ -150,9 +150,9 @@ export default function TabOneScreen() {
 					</Text> */}
 					<HorizontalDatepicker
 						mode="gregorian"
-						startDate={new Date("2024-03-13")}
-						endDate={new Date("2024-03-31")}
-						initialSelectedDate={new Date("2024-03-13")}
+						startDate={new Date("2024-05-16")}
+						endDate={new Date("2024-05-31")}
+						initialSelectedDate={new Date("2024-05-16")}
 						onSelectedDateChange={(date) => console.log(date)}
 						selectedItemWidth={170}
 						unselectedItemWidth={38}
