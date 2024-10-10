@@ -17,6 +17,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { CloudDownload } from "lucide-react-native";
 import WebView from "react-native-webview";
+// import jwt from 'jsonwebtoken';
 
 export {
 	// Catch any errors thrown by the Layout component.
@@ -64,7 +65,11 @@ function RootLayoutNav() {
 
 	const INJECTED_JAVASCRIPT = `
 		(function() {
+			let eventsFound = false;
+
 			function findEventsInIframe() {
+				if (eventsFound) return;
+
 				const iframe = Array.from(document.getElementsByTagName("iframe")).find(
 					(frame) => frame.src && frame.src.includes("/eCrew/Dashboard/HomeIndex"),
 				);
@@ -77,12 +82,73 @@ function RootLayoutNav() {
 						if (match) {
 							try {
 								const eventsData = JSON.parse(match[1]);
+
 								window.ReactNativeWebView.postMessage(
 									JSON.stringify({
 										type: "events",
 										data: eventsData,
-									}),
+									})
 								);
+								eventsFound = true;
+
+								// Filter for IDs of type Flight and Default
+								const filteredIds = eventsData.filter((event) => event.type === "Flight" || event.type === "Default").map((event) => event.id);
+
+								window.ReactNativeWebView.postMessage(
+									JSON.stringify({
+										type: "eventIDs",
+										data: filteredIds,
+									})
+								);
+
+								filteredIds.forEach((id) => {
+									const header = {
+										id,
+										calledfrom: 1,
+										crewID: "A",
+										timesIn: "2",
+										Port: "",
+										HotelIndex: "",
+										HotelInfo: {},
+									};
+
+									const token = btoa(JSON.stringify(header));
+
+									EcallUrlAsync(
+										"/eCrew/DutyDetails/Index",
+										{
+											dt: token,
+										},
+										"get",
+										function (response) {
+											// Extract DutyDetails from the response
+											const dutyDetailsMatch = response.text().match(/var\\s+DutyDetails\\s*=\\s*(\\[.*?\\]);/s);
+											if (dutyDetailsMatch) {
+												try {
+													const dutyDetails = JSON.parse(dutyDetailsMatch[1]);
+													window.ReactNativeWebView.postMessage(
+														JSON.stringify({
+															type: "extractedDutyDetails",
+															data: dutyDetails,
+															id,
+														})
+													);
+												} catch (e) {
+													console.error("Error parsing DutyDetails:", e);
+												}
+											}
+
+											window.ReactNativeWebView.postMessage(
+												JSON.stringify({
+													type: "dutyDetails",
+													data: response.text(),
+													id,
+												}),
+											);
+										},
+									);
+								});
+
 								return;
 							} catch (e) {
 								console.error("Error parsing events data:", e);
@@ -92,9 +158,12 @@ function RootLayoutNav() {
 				}
 
 				// If not found, check again after a short delay
-				setTimeout(findEventsInIframe, 500);
+				if (!eventsFound) {
+					setTimeout(findEventsInIframe, 500);
+				}
 			}
 
+			// Start looking for the iframe and events
 			findEventsInIframe();
 
 			// Also send location information as before
@@ -102,10 +171,9 @@ function RootLayoutNav() {
 				JSON.stringify({
 					type: "location",
 					data: window.location,
-				}),
+				})
 			);
-		})();
-	`;
+		})()`;
 
 	const handleWebViewMessage = (event: { nativeEvent: { data: string } }) => {
 		const data = JSON.parse(event.nativeEvent.data);
@@ -114,36 +182,32 @@ function RootLayoutNav() {
 			setEventsData(data.data);
 			
 			// Filter out the IDs and update the eventIds state
-			if (Array.isArray(data.data)) {
-				const ids = data.data.map((event: { id: string }) => event.id).filter((id: string): id is string => id !== undefined);
-				setEventIds(ids);
-				console.log('Event IDs:', ids);
-			}
-		} 
+			// if (Array.isArray(data.data)) {
+			// 	const ids = data.data.map((event: { id: string }) => event.id).filter((id: string): id is string => id !== undefined);
+			// 	setEventIds(ids);
+			// 	console.log('Event IDs:', ids);
+			// }
+		} else if (data.type === 'eventIDs') {
+			console.log('Event IDs:', data.data);
+		}
 		else if (data.type === 'location') {
 			console.log('Location data:', data.data);
 			// Handle the location data here
+			// TODO: If href is "https://ezy-crew.aims.aero/eCrew/Dashboard" then cover screen
 		} 
-		else if (data.type === 'openFlights') {
-			console.log('Open Flights data:', data.data);
-			// setOpenFlights(data.data);
-		} 
-		else if (data.type === 'eventObjects') {
-			console.log('Event Objects data:', data.data);
-			// setEventObjects(data.data);
-		} 
-		// else if (data.type === 'eCrewHeader') {
-		// 	console.log('eCrew Header data:', data.data);
-		// 	// setEcrewHeader(data.data);
+		// else if (data.type === 'openFlights') {
+		// 	console.log('Open Flights data:', data.data);
 		// } 
 		else if (data.type === 'dutyDetails') {
-			console.log('Duty Details data:', data.data);
+			// console.log('Duty Details data:', data.data, data.id);
+			// setDutyDetails(data.data);
+		} else if (data.type === 'extractedDutyDetails') {
+			console.log('Extracted Duty Details data:', data.data, data.id);
 			// setDutyDetails(data.data);
 		} 
-		else if (data.type === 'parsedHtml') {
-			console.log('Parsed HTML data:', data.data);
-			// setParsedHtml(data.data);
-		}
+		// else if (data.type === 'parsedHtml') {
+		// 	console.log('Parsed HTML data:', data.data);
+		// }
 	};
 
 	return (

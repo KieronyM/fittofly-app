@@ -23,6 +23,33 @@ import { Button } from "./ui";
 // TODO: Report instructions with locations
 // TODO: Include the date somewhere
 
+const eventObjects = filteredIds.map(id => {
+	const header = {
+	  id,
+	  "calledfrom": 1,
+	  "crewID": "A",
+	  "timesIn": "2",
+	  "Port": "",
+	  "HotelIndex": "",
+	  "HotelInfo": {}
+	};
+	
+	// Create a base64Url encoded header
+	const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64')
+	  .replace(/=/g, '')
+	  .replace(/\+/g, '-')
+	  .replace(/\//g, '_');
+	
+	// Create an empty payload
+	const encodedPayload = Buffer.from(JSON.stringify({})).toString('base64')
+	  .replace(/=/g, '')
+	  .replace(/\+/g, '-')
+	  .replace(/\//g, '_');
+	
+	// Combine header and payload without signature
+	return `${encodedHeader}.${encodedPayload}.`;
+  });
+
 // const timeline = [
 //   {
 //     id: 1,
