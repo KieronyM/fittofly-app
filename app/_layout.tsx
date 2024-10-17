@@ -58,6 +58,7 @@ export default function RootLayout() {
 function RootLayoutNav() {
 	const [eventsData, setEventsData] = useState(null);
 	const [eventIds, setEventIds] = useState<string[]>([]);
+	const [receivedDutyDetails, setReceivedDutyDetails] = useState<string[]>([]);
 	const [webViewOverlay, setWebViewOverlay] = useState(false);
 
 	// ref
@@ -187,40 +188,33 @@ function RootLayoutNav() {
 		if (data.type === 'events') {
 			console.log('Events data received:', data.data);
 			setEventsData(data.data);
-			
-			// Filter out the IDs and update the eventIds state
-			// if (Array.isArray(data.data)) {
-			// 	const ids = data.data.map((event: { id: string }) => event.id).filter((id: string): id is string => id !== undefined);
-			// 	setEventIds(ids);
-			// 	console.log('Event IDs:', ids);
-			// }
 		} else if (data.type === 'eventIDs') {
 			console.log('Event IDs:', data.data);
-		}
-		else if (data.type === 'location') {
+			setEventIds(data.data);
+			// Reset receivedDutyDetails when new eventIDs are received
+			setReceivedDutyDetails([]);
+		} else if (data.type === 'location') {
 			console.log('Location data:', data.data);
 			// Handle the location data here
 			if (data.data.host === 'ezy-crew.aims.aero') {
 				// Cover the webview with a white screen
 				setWebViewOverlay(true);
-			} else {
-				setWebViewOverlay(false);
 			}
-		} 
-		// else if (data.type === 'openFlights') {
-		// 	console.log('Open Flights data:', data.data);
-		// } 
-		else if (data.type === 'dutyDetails') {
-			// console.log('Duty Details data:', data.data, data.id);
-			// setDutyDetails(data.data);
+		} else if (data.type === 'dutyDetails') {
+			console.log('Duty Details received for ID:', data.id);
+			setReceivedDutyDetails(prev => [...prev, data.id]);
 		} else if (data.type === 'extractedDutyDetails') {
 			console.log('Extracted Duty Details data:', data.data, data.id);
-			// setDutyDetails(data.data);
-		} 
-		// else if (data.type === 'parsedHtml') {
-		// 	console.log('Parsed HTML data:', data.data);
-		// }
+		}
 	};
+
+	// Effect to close bottom sheet when all duty details are received
+	useEffect(() => {
+		if (eventIds.length > 0 && receivedDutyDetails.length === eventIds.length) {
+			console.log('All duty details received. Closing bottom sheet.');
+			bottomSheetModalRef.current?.close();
+		}
+	}, [eventIds, receivedDutyDetails]);
 
 	return (
 			<SupabaseProvider>
