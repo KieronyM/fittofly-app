@@ -38,9 +38,9 @@ const styles = StyleSheet.create({
 	},
 	overlay: {
 		...StyleSheet.absoluteFillObject,
-		backgroundColor: 'white',
-		justifyContent: 'center',
-		alignItems: 'center',
+		backgroundColor: "white",
+		justifyContent: "center",
+		alignItems: "center",
 	},
 });
 
@@ -59,7 +59,7 @@ function RootLayoutNav() {
 	const [eventsData, setEventsData] = useState(null);
 	const [eventIds, setEventIds] = useState<string[]>([]);
 	const [receivedDutyDetails, setReceivedDutyDetails] = useState<string[]>([]);
-	const [webViewOverlay, setWebViewOverlay] = useState(false);
+	const [webViewOverlay, setWebViewOverlay] = useState(true);
 
 	// ref
 	const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -185,126 +185,138 @@ function RootLayoutNav() {
 
 	const handleWebViewMessage = (event: { nativeEvent: { data: string } }) => {
 		const data = JSON.parse(event.nativeEvent.data);
-		if (data.type === 'events') {
-			console.log('Events data received:', data.data);
+		if (data.type === "events") {
+			console.log("Events data received:", data.data);
 			setEventsData(data.data);
-		} else if (data.type === 'eventIDs') {
-			console.log('Event IDs:', data.data);
+		} else if (data.type === "eventIDs") {
+			console.log("Event IDs:", data.data);
 			setEventIds(data.data);
 			// Reset receivedDutyDetails when new eventIDs are received
 			setReceivedDutyDetails([]);
-		} else if (data.type === 'location') {
-			console.log('Location data:', data.data);
+		} else if (data.type === "location") {
+			console.log("Location data:", data.data);
 			// Handle the location data here
-			if (data.data.host === 'ezy-crew.aims.aero') {
+			if (data.data.host === "ezy-crew.aims.aero") {
 				// Cover the webview with a white screen
 				setWebViewOverlay(true);
+			} else {
+				// PROD/TEST: Set to false for production
+				setWebViewOverlay(false);
 			}
-		} else if (data.type === 'dutyDetails') {
-			console.log('Duty Details received for ID:', data.id);
-			setReceivedDutyDetails(prev => [...prev, data.id]);
-		} else if (data.type === 'extractedDutyDetails') {
-			console.log('Extracted Duty Details data:', data.data, data.id);
+		} else if (data.type === "dutyDetails") {
+			console.log("Duty Details received for ID:", data.id);
+			setReceivedDutyDetails((prev) => [...prev, data.id]);
+		} else if (data.type === "extractedDutyDetails") {
+			console.log("Extracted Duty Details data:", data.data, data.id);
 		}
 	};
 
 	// Effect to close bottom sheet when all duty details are received
 	useEffect(() => {
 		if (eventIds.length > 0 && receivedDutyDetails.length === eventIds.length) {
-			console.log('All duty details received. Closing bottom sheet.');
+			console.log("All duty details received. Closing bottom sheet.");
 			bottomSheetModalRef.current?.close();
 		}
 	}, [eventIds, receivedDutyDetails]);
 
 	return (
-			<SupabaseProvider>
-				<GestureHandlerRootView style={{ flex: 1 }}>
-					<BottomSheetModalProvider>
-						<SafeAreaProvider>
-								<StatusBar style="light" />
-								<Stack>
-									<Stack.Screen name="(auth)" options={{ headerShown: false }} />
-									<Stack.Screen
-										name="(app)"
-										options={{
-											headerShadowVisible: false,
-											headerTransparent: true,
-											headerStyle: {
-												// TODO: This should be solid then fade to transparency
-												// backgroundColor: "#0EA5E9",
-												// colorScheme === "dark" ? "hsl(240, 10%, 3.9%)" : "#0EA5E9",
-										},
-										headerLeft: () => (
-											<CloudDownload
-												// fill="white"
-												onPress={handlePresentPress}
-												color="white"
-												strokeWidth={2.5}
-												size="25"
-											/>
-										),
-										headerTitle: () => (
-											<Image
-												style={styles.image}
-												source={
-													// colorScheme === "dark"
-													// 	?
-													require("../assets/logo/fittofly-ultra-dark-3.png")
-													// : require("../assets/logo/fittofly-test.png")
-												}
-											/>
-										),
-										headerRight: () => (
-											<Bell
-												// fill="white"
-												color="white"
-												strokeWidth={2.5}
-												size="25"
-											/>
-										),
-									}}
-								/>
-							</Stack>
-							<BottomSheetModal
-								snapPoints={["85%"]}
-								ref={bottomSheetModalRef}
-								onChange={handleSheetChanges}
-								enablePanDownToClose
-								style={{
-									shadowColor: "#000",
-									shadowOffset: {
-										width: 0,
-										height: 10,
+		<SupabaseProvider>
+			<GestureHandlerRootView style={{ flex: 1 }}>
+				<BottomSheetModalProvider>
+					<SafeAreaProvider>
+						<StatusBar style="light" />
+						<Stack>
+							<Stack.Screen name="(auth)" options={{ headerShown: false }} />
+							<Stack.Screen
+								name="(app)"
+								options={{
+									headerShadowVisible: false,
+									headerTransparent: true,
+									headerStyle: {
+										// TODO: This should be solid then fade to transparency
+										// backgroundColor: "#0EA5E9",
+										// colorScheme === "dark" ? "hsl(240, 10%, 3.9%)" : "#0EA5E9",
 									},
-									shadowOpacity: 0.51,
-									shadowRadius: 13.16,
-
-									elevation: 20,
+									headerLeft: () => (
+										<CloudDownload
+											// fill="white"
+											onPress={handlePresentPress}
+											color="white"
+											strokeWidth={2.5}
+											size="25"
+										/>
+									),
+									headerTitle: () => (
+										<Image
+											style={styles.image}
+											source={
+												// colorScheme === "dark"
+												// 	?
+												require("../assets/logo/fittofly-ultra-dark-3.png")
+												// : require("../assets/logo/fittofly-test.png")
+											}
+										/>
+									),
+									headerRight: () => (
+										<Bell
+											// fill="white"
+											color="white"
+											strokeWidth={2.5}
+											size="25"
+										/>
+									),
 								}}
+							/>
+						</Stack>
+						<BottomSheetModal
+							snapPoints={["85%"]}
+							ref={bottomSheetModalRef}
+							onChange={handleSheetChanges}
+							enablePanDownToClose
+							style={{
+								shadowColor: "#000",
+								shadowOffset: {
+									width: 0,
+									height: 10,
+								},
+								shadowOpacity: 0.51,
+								shadowRadius: 13.16,
+
+								elevation: 20,
+							}}
+						>
+							<BottomSheetView
+								style={{ flex: 1, flexGrow: 1, alignItems: "center" }}
 							>
-								<BottomSheetView style={{ flex: 1, flexGrow: 1, alignItems: "center" }}>
-									<WebView
-										style={{ flex: 1, height: "100%" }}
-										injectedJavaScript={INJECTED_JAVASCRIPT}
-										onMessage={handleWebViewMessage}
-										source={{ uri: "https://ezy-crew.aims.aero/eCrew/Dashboard" }}
-									/>
-									{webViewOverlay && (
-										<View style={styles.overlay}>
-											<View className="flex-row items-center">
-												<Image
-													source={require("../assets/logo/fittofly-icon-dark.png")}
-													className="w-8 h-8 animate-spin"
-												/>
-												<Text>Loading...</Text>
-											</View>
+								<WebView
+									style={{ flex: 1, height: "100%" }}
+									injectedJavaScript={INJECTED_JAVASCRIPT}
+									onMessage={handleWebViewMessage}
+									// source={{ uri: "https://google.com" }}
+									// PROD/TEST: Set to eCrew URL for production
+									source={{ uri: "https://ezy-crew.aims.aero/eCrew/Dashboard" }}
+								/>
+								{webViewOverlay && (
+									<View style={styles.overlay}>
+										<View className="flex-col items-center">
+											<Image
+												source={require("../assets/logo/fittofly-icon-dark.png")}
+												className="w-24 h-24 animate-spin"
+											/>
+											<Text className="mt-8 text-3xl text-gray-900 font-bold">
+												Loading your roster...
+											</Text>
+											<Text className="mt-3 mb-24 text-xl text-gray-500 font-semibold">
+												This may take up to 60 seconds
+											</Text>
 										</View>
-									)}
-								</BottomSheetView>
-							</BottomSheetModal>
-						</SafeAreaProvider>
-					</BottomSheetModalProvider>
-				</GestureHandlerRootView>
-			</SupabaseProvider>
+									</View>
+								)}
+							</BottomSheetView>
+						</BottomSheetModal>
+					</SafeAreaProvider>
+				</BottomSheetModalProvider>
+			</GestureHandlerRootView>
+		</SupabaseProvider>
 	);
 }
