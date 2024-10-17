@@ -291,7 +291,13 @@ function RootLayoutNav() {
 									/>
 									{webViewOverlay && (
 										<View style={styles.overlay}>
-											<Text>Loading...</Text>
+											<View className="flex-row items-center">
+												<Image
+													source={require("../assets/logo/fittofly-icon-dark.png")}
+													className="w-8 h-8 animate-spin"
+												/>
+												<Text>Loading...</Text>
+											</View>
 										</View>
 									)}
 								</BottomSheetView>
