@@ -5,7 +5,7 @@ import { Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 // import { useColorScheme } from "nativewind";
 import { useEffect, useCallback, useRef, useState } from "react";
-import { StyleSheet, Image, Text } from "react-native";
+import { StyleSheet, Image, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Bell } from "@/components/Icons";
 import { SupabaseProvider } from "@/context/SupabaseProvider";
@@ -13,7 +13,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
 	BottomSheetModal,
 	BottomSheetModalProvider,
-	// BottomSheetView,
+	BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { CloudDownload } from "lucide-react-native";
 import WebView from "react-native-webview";
@@ -36,6 +36,12 @@ const styles = StyleSheet.create({
 		width: 130,
 		marginRight: 13,
 	},
+	overlay: {
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: 'white',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
 });
 
 export default function RootLayout() {
@@ -52,6 +58,7 @@ export default function RootLayout() {
 function RootLayoutNav() {
 	const [eventsData, setEventsData] = useState(null);
 	const [eventIds, setEventIds] = useState<string[]>([]);
+	const [webViewOverlay, setWebViewOverlay] = useState(false);
 
 	// ref
 	const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -193,7 +200,12 @@ function RootLayoutNav() {
 		else if (data.type === 'location') {
 			console.log('Location data:', data.data);
 			// Handle the location data here
-			// TODO: If href is "https://ezy-crew.aims.aero/eCrew/Dashboard" then cover screen
+			if (data.data.host === 'ezy-crew.aims.aero') {
+				// Cover the webview with a white screen
+				setWebViewOverlay(true);
+			} else {
+				setWebViewOverlay(false);
+			}
 		} 
 		// else if (data.type === 'openFlights') {
 		// 	console.log('Open Flights data:', data.data);
@@ -276,17 +288,19 @@ function RootLayoutNav() {
 									elevation: 20,
 								}}
 							>
-								{/* <BottomSheetView style={{ flex: 1, flexGrow: 1, alignItems: "center" }}> */}
-								{/* <Text>Events Data: {JSON.stringify(eventsData)}</Text> */}
-								{/* <Text>Event IDs: {eventIds.join(', ')}</Text> */}
-								<WebView
-									style={{ flex: 1, height: "100%" }}
-									injectedJavaScript={INJECTED_JAVASCRIPT}
-									onMessage={handleWebViewMessage}
-									source={{ uri: "https://ezy-crew.aims.aero/eCrew/Dashboard" }}
-								/>
-								{/* </BottomSheetView> */}
-								
+								<BottomSheetView style={{ flex: 1, flexGrow: 1, alignItems: "center" }}>
+									<WebView
+										style={{ flex: 1, height: "100%" }}
+										injectedJavaScript={INJECTED_JAVASCRIPT}
+										onMessage={handleWebViewMessage}
+										source={{ uri: "https://ezy-crew.aims.aero/eCrew/Dashboard" }}
+									/>
+									{webViewOverlay && (
+										<View style={styles.overlay}>
+											<Text>Loading...</Text>
+										</View>
+									)}
+								</BottomSheetView>
 							</BottomSheetModal>
 						</SafeAreaProvider>
 					</BottomSheetModalProvider>
