@@ -42,6 +42,49 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 	},
+	bottomSheetModal: {
+		shadowColor: "#000",
+		shadowOffset: {
+			width: 0,
+			height: 10,
+		},
+		shadowOpacity: 0.51,
+		shadowRadius: 13.16,
+		elevation: 20,
+	},
+	bottomSheetView: {
+		flex: 1,
+		width: "100%",
+		height: "100%",
+	},
+	webView: {
+		flex: 1,
+		width: "100%",
+		height: "100%",
+	},
+	overlayContent: {
+		flexDirection: "column",
+		alignItems: "center",
+	},
+	overlayImage: {
+		width: 96,
+		height: 96,
+		// Note: React Native doesn't support CSS animations directly.
+		// You might need to implement a custom animation for the spin effect.
+	},
+	overlayTitle: {
+		marginTop: 32,
+		fontSize: 24,
+		color: "#111827",
+		fontWeight: "bold",
+	},
+	overlaySubtitle: {
+		marginTop: 12,
+		marginBottom: 96,
+		fontSize: 20,
+		color: "#6B7280",
+		fontWeight: "600",
+	},
 });
 
 export default function RootLayout() {
@@ -273,22 +316,11 @@ function RootLayoutNav() {
 							ref={bottomSheetModalRef}
 							onChange={handleSheetChanges}
 							enablePanDownToClose
-							style={{
-								shadowColor: "#000",
-								shadowOffset: {
-									width: 0,
-									height: 10,
-								},
-								shadowOpacity: 0.51,
-								shadowRadius: 13.16,
-								elevation: 20,
-							}}
+							style={styles.bottomSheetModal}
 						>
-							<BottomSheetView
-								style={{ flex: 1, width: "100%", height: "100%" }}
-							>
+							<BottomSheetView style={styles.bottomSheetView}>
 								<WebView
-									style={{ flex: 1, width: "100%", height: "100%" }}
+									style={styles.webView}
 									injectedJavaScript={INJECTED_JAVASCRIPT}
 									onMessage={handleWebViewMessage}
 									source={{ uri: "https://ezy-crew.aims.aero/eCrew/Dashboard" }}
@@ -299,15 +331,15 @@ function RootLayoutNav() {
 								/>
 								{webViewOverlay && (
 									<View style={styles.overlay}>
-										<View className="flex-col items-center">
+										<View style={styles.overlayContent}>
 											<Image
 												source={require("../assets/logo/fittofly-icon-dark.png")}
-												className="w-24 h-24 animate-spin"
+												style={styles.overlayImage}
 											/>
-											<Text className="mt-8 text-3xl text-gray-900 font-bold">
+											<Text style={styles.overlayTitle}>
 												Loading your roster...
 											</Text>
-											<Text className="mt-3 mb-24 text-xl text-gray-500 font-semibold">
+											<Text style={styles.overlaySubtitle}>
 												This may take up to 60 seconds
 											</Text>
 										</View>
