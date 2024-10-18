@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "generate-types": "supabase gen types --lang=typescript --project-id gbvjqnycoopylzviqeol --schema public > types/supabase.ts"
   },
   "dependencies": {
     "@awrminkhodaei/react-native-horizontal-datepicker": "^0.1.6",
