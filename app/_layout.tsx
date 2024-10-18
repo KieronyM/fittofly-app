@@ -59,7 +59,7 @@ function RootLayoutNav() {
 	const [eventsData, setEventsData] = useState(null);
 	const [eventIds, setEventIds] = useState<string[]>([]);
 	const [receivedDutyDetails, setReceivedDutyDetails] = useState<string[]>([]);
-	const [webViewOverlay, setWebViewOverlay] = useState(true);
+	const [webViewOverlay, setWebViewOverlay] = useState(false);
 
 	// ref
 	const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -281,20 +281,21 @@ function RootLayoutNav() {
 								},
 								shadowOpacity: 0.51,
 								shadowRadius: 13.16,
-
 								elevation: 20,
 							}}
 						>
 							<BottomSheetView
-								style={{ flex: 1, flexGrow: 1, alignItems: "center" }}
+								style={{ flex: 1, width: "100%", height: "100%" }}
 							>
 								<WebView
-									style={{ flex: 1, height: "100%" }}
+									style={{ flex: 1, width: "100%", height: "100%" }}
 									injectedJavaScript={INJECTED_JAVASCRIPT}
 									onMessage={handleWebViewMessage}
-									// source={{ uri: "https://google.com" }}
-									// PROD/TEST: Set to eCrew URL for production
 									source={{ uri: "https://ezy-crew.aims.aero/eCrew/Dashboard" }}
+									javaScriptEnabled={true}
+									domStorageEnabled={true}
+									startInLoadingState={true}
+									scalesPageToFit={true}
 								/>
 								{webViewOverlay && (
 									<View style={styles.overlay}>
