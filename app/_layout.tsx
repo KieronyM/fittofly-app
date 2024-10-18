@@ -5,7 +5,7 @@ import { Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 // import { useColorScheme } from "nativewind";
 import { useEffect, useCallback, useRef, useState } from "react";
-import { StyleSheet, Image, Text, View } from "react-native";
+import { StyleSheet, Image, Text, View, Animated, Easing } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Bell } from "@/components/Icons";
 import { SupabaseProvider } from "@/context/SupabaseProvider";
@@ -262,6 +262,28 @@ function RootLayoutNav() {
 		}
 	}, [eventIds, receivedDutyDetails]);
 
+	const spinValue = useRef(new Animated.Value(0)).current;
+
+	useEffect(() => {
+		if (webViewOverlay) {
+			Animated.loop(
+				Animated.timing(spinValue, {
+					toValue: 1,
+					duration: 1200,
+					easing: Easing.linear,
+					useNativeDriver: true,
+				})
+			).start();
+		} else {
+			spinValue.setValue(0);
+		}
+	}, [webViewOverlay]);
+
+	const spin = spinValue.interpolate({
+		inputRange: [0, 1],
+		outputRange: ['0deg', '360deg'],
+	});
+
 	return (
 		<SupabaseProvider>
 			<GestureHandlerRootView style={{ flex: 1 }}>
@@ -332,9 +354,12 @@ function RootLayoutNav() {
 								{webViewOverlay && (
 									<View style={styles.overlay}>
 										<View style={styles.overlayContent}>
-											<Image
+											<Animated.Image
 												source={require("../assets/logo/fittofly-icon-dark.png")}
-												style={styles.overlayImage}
+												style={[
+													styles.overlayImage,
+													{ transform: [{ rotate: spin }] }
+												]}
 											/>
 											<Text style={styles.overlayTitle}>
 												Loading your roster...
