@@ -17,6 +17,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { CloudDownload } from "lucide-react-native";
 import WebView from "react-native-webview";
+import { eCrewDuty, eCrewFlight, importRoster } from "@/lib/roster/importRoster";
 // import jwt from 'jsonwebtoken';
 
 export {
@@ -99,9 +100,9 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-	const [eventsData, setEventsData] = useState(null);
+	const [eventsData, setEventsData] = useState<eCrewDuty[]>([]);
 	const [eventIds, setEventIds] = useState<string[]>([]);
-	const [receivedDutyDetails, setReceivedDutyDetails] = useState<string[]>([]);
+	const [receivedDutyDetails, setReceivedDutyDetails] = useState<eCrewFlight[]>([]);
 	const [webViewOverlay, setWebViewOverlay] = useState(false);
 
 	// ref
@@ -229,15 +230,15 @@ function RootLayoutNav() {
 	const handleWebViewMessage = (event: { nativeEvent: { data: string } }) => {
 		const data = JSON.parse(event.nativeEvent.data);
 		if (data.type === "events") {
-			console.log("Events data received:", data.data);
+			// console.log("Events data received:", data.data);
 			setEventsData(data.data);
 		} else if (data.type === "eventIDs") {
-			console.log("Event IDs:", data.data);
+			// console.log("Event IDs:", data.data);
 			setEventIds(data.data);
 			// Reset receivedDutyDetails when new eventIDs are received
 			setReceivedDutyDetails([]);
 		} else if (data.type === "location") {
-			console.log("Location data:", data.data);
+			// console.log("Location data:", data.data);
 			// Handle the location data here
 			if (data.data.host === "ezy-crew.aims.aero") {
 				// Cover the webview with a white screen
@@ -247,17 +248,30 @@ function RootLayoutNav() {
 				setWebViewOverlay(false);
 			}
 		} else if (data.type === "dutyDetails") {
-			console.log("Duty Details received for ID:", data.id);
-			setReceivedDutyDetails((prev) => [...prev, data.id]);
+			// console.log("Duty Details received for ID:", data.id);
+			// setReceivedDutyDetails((prev) => [...prev, data.id]);
 		} else if (data.type === "extractedDutyDetails") {
-			console.log("Extracted Duty Details data:", data.data, data.id);
+			// @ts-ignore
+			setReceivedDutyDetails((prev) => [
+				...prev,
+				{ originalDutyId: data.id, dutyDetails: data.data },
+			]);
+			// console.log("Extracted Duty Details data:", data.data, data.id);
 		}
 	};
 
 	// Effect to close bottom sheet when all duty details are received
 	useEffect(() => {
-		if (eventIds.length > 0 && receivedDutyDetails.length === eventIds.length) {
-			console.log("All duty details received. Closing bottom sheet.");
+		if (eventsData && receivedDutyDetails && eventIds.length > 0 && receivedDutyDetails.length === eventIds.length) {
+			importRoster(eventsData, receivedDutyDetails)
+				.then(() => {
+					console.log("Data uploaded successfully. Closing bottom sheet.");
+					bottomSheetModalRef.current?.close();
+				})
+				.catch((error) => {
+					console.error("Failed to upload data:", error);
+					// Handle the error appropriately
+				});
 			bottomSheetModalRef.current?.close();
 		}
 	}, [eventIds, receivedDutyDetails]);
@@ -272,7 +286,7 @@ function RootLayoutNav() {
 					duration: 1200,
 					easing: Easing.linear,
 					useNativeDriver: true,
-				})
+				}),
 			).start();
 		} else {
 			spinValue.setValue(0);
@@ -281,7 +295,7 @@ function RootLayoutNav() {
 
 	const spin = spinValue.interpolate({
 		inputRange: [0, 1],
-		outputRange: ['0deg', '360deg'],
+		outputRange: ["0deg", "360deg"],
 	});
 
 	return (
@@ -358,7 +372,7 @@ function RootLayoutNav() {
 												source={require("../assets/logo/fittofly-icon-dark.png")}
 												style={[
 													styles.overlayImage,
-													{ transform: [{ rotate: spin }] }
+													{ transform: [{ rotate: spin }] },
 												]}
 											/>
 											<Text style={styles.overlayTitle}>

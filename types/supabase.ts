@@ -181,10 +181,13 @@ export type Database = {
           duty_ids: number[]
           duty_period_ids: number[]
           end_date: string
+          flight_ids: number[]
           old_duty_ids: number[]
-          old_duty_period_ids: number | null
+          old_duty_period_ids: number[]
+          old_flight_ids: number[]
           raw_duty_ids: number[]
           raw_duty_period_ids: number[]
+          raw_flight_ids: number[]
           roster_id: number
           start_date: string
           user_id: string
@@ -194,23 +197,29 @@ export type Database = {
           duty_ids: number[]
           duty_period_ids: number[]
           end_date: string
+          flight_ids: number[]
           old_duty_ids: number[]
-          old_duty_period_ids?: number | null
+          old_duty_period_ids: number[]
+          old_flight_ids: number[]
           raw_duty_ids: number[]
           raw_duty_period_ids: number[]
+          raw_flight_ids: number[]
           roster_id?: number
           start_date: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           created_at?: string
           duty_ids?: number[]
           duty_period_ids?: number[]
           end_date?: string
+          flight_ids?: number[]
           old_duty_ids?: number[]
-          old_duty_period_ids?: number | null
+          old_duty_period_ids?: number[]
+          old_flight_ids?: number[]
           raw_duty_ids?: number[]
           raw_duty_period_ids?: number[]
+          raw_flight_ids?: number[]
           roster_id?: number
           start_date?: string
           user_id?: string
