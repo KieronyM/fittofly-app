@@ -1,4 +1,5 @@
 import { supabase } from "@/utils/supabase";
+import { findEarliestStartAndLatestEnd } from "@/utils/times";
 
 export interface eCrewDuty {
   // Define the structure of your event data here
@@ -23,29 +24,7 @@ export async function importRoster(eCrewDutiesDetails: eCrewDuty[], eCrewFlights
     console.log('eCrew Duties details:', eCrewDutiesDetails);
     console.log('eCrew Flights details:', eCrewFlightsDetails);
 
-    // Find the earliest start date and latest end date
-    let earliestStartDate = new Date(eCrewDutiesDetails[0].start);
-    let latestEndDate = new Date(eCrewDutiesDetails[0].end);
-
-    for (const duty of eCrewDutiesDetails) {
-      const startDate = new Date(duty.start);
-      const endDate = new Date(duty.end);
-
-      if (startDate < earliestStartDate) {
-        earliestStartDate = startDate;
-      }
-
-      if (endDate > latestEndDate) {
-        latestEndDate = endDate;
-      }
-    }
-
-    // Format dates as 'YYYY-MM-DD'
-    const formattedStartDate = earliestStartDate.toISOString().split('T')[0];
-    const formattedEndDate = latestEndDate.toISOString().split('T')[0];
-
-    console.log('Earliest start date:', formattedStartDate);
-    console.log('Latest end date:', formattedEndDate);
+    const { formattedStartDate, formattedEndDate } = findEarliestStartAndLatestEnd(eCrewDutiesDetails);
 
     // Create a roster - this will be a single record that will be inserted into the database
     const roster = {
