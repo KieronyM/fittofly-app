@@ -1,24 +1,8 @@
+import { ECrewDuty, ECrewFlight } from "@/types/eCrew";
 import { supabase } from "@/utils/supabase";
 import { findEarliestStartAndLatestEnd } from "@/utils/times";
 
-export interface eCrewDuty {
-  // Define the structure of your event data here
-  id: string;
-  start: string;
-  end: string;
-  type: 'Flight' | 'Hotel' | 'Default' | 'Standby' | 'Training' | 'Off';
-  IsDeadhead: boolean;
-  // ... other fields
-}
-
-export interface eCrewFlight {
-  originalDutyId: string;
-  dutyDetails: {
-
-  }; // Replace 'any' with a more specific type if possible
-}
-
-export async function importRoster(eCrewDutiesDetails: eCrewDuty[], eCrewFlightsDetails: eCrewFlight[]) {
+export async function importRoster(eCrewDutiesDetails: ECrewDuty[], eCrewFlightsDetails: ECrewFlight[]) {
   try {
     console.log('Importing roster...');
     console.log('eCrew Duties details:', eCrewDutiesDetails);

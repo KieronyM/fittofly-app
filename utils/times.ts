@@ -1,4 +1,4 @@
-import { eCrewDuty } from "@/lib/roster/importRoster";
+import { ECrewDuty } from "@/types/eCrew";
 
 export function convertTimeToMinutes(timeString: string): number {
 	const [hoursStr, minutesStr] = timeString.split(":");
@@ -18,7 +18,7 @@ export function convertTimeToMinutes(timeString: string): number {
 	return hours * 60 + minutes;
 }
 
-export function findEarliestStartAndLatestEnd(eCrewDutiesDetails: eCrewDuty[]) {
+export function findEarliestStartAndLatestEnd(eCrewDutiesDetails: ECrewDuty[]) {
 	// Find the earliest start date and latest end date
 	let earliestStartDate = new Date(eCrewDutiesDetails[0].start);
 	let latestEndDate = new Date(eCrewDutiesDetails[0].end);

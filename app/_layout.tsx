@@ -17,7 +17,12 @@ import {
 } from "@gorhom/bottom-sheet";
 import { CloudDownload } from "lucide-react-native";
 import WebView from "react-native-webview";
-import { eCrewDuty, eCrewFlight, importRoster } from "@/lib/roster/importRoster";
+import { importRoster } from "@/lib/roster/importRoster";
+import {
+	eCrewDutiesDetails,
+	eCrewFlightsDetails,
+} from "@/data/testing/source/eCrew";
+import { ECrewDuty, ECrewFlight } from "@/types/eCrew";
 // import jwt from 'jsonwebtoken';
 
 export {
@@ -100,11 +105,17 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-	const [eventsData, setEventsData] = useState<eCrewDuty[]>([]);
-	const [eventIds, setEventIds] = useState<string[]>([]);
-	const [receivedDutyDetails, setReceivedDutyDetails] = useState<eCrewFlight[]>([]);
-	const [webViewOverlay, setWebViewOverlay] = useState(false);
+	const isTestMode =
+		process.env.EXPO_PUBLIC_IS_TEST_MODE === "true" ? true : false;
 
+	const [eventsData, setEventsData] = useState<ECrewDuty[]>([]);
+	const [eventIds, setEventIds] = useState<string[]>([]);
+	const [receivedDutyDetails, setReceivedDutyDetails] = useState<ECrewFlight[]>(
+		[],
+	);
+	const [webViewOverlay, setWebViewOverlay] = useState(
+		isTestMode ? true : false,
+	);
 	// ref
 	const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
@@ -113,7 +124,19 @@ function RootLayoutNav() {
 		// console.log("handleSheetChanges", index);
 	}, []);
 
-	const handlePresentPress = () => bottomSheetModalRef.current?.present();
+	const handlePresentPress = () =>
+		bottomSheetModalRef.current?.present();
+
+	const TEST_MODE_INJECTED_JAVASCRIPT = `
+	(function() {
+		// Also send location information as before
+		window.ReactNativeWebView.postMessage(
+			JSON.stringify({
+				type: "location",
+				data: window.location,
+			})
+		);
+	})()`;
 
 	const INJECTED_JAVASCRIPT = `
 		(function() {
@@ -238,7 +261,22 @@ function RootLayoutNav() {
 			// Reset receivedDutyDetails when new eventIDs are received
 			setReceivedDutyDetails([]);
 		} else if (data.type === "location") {
-			// console.log("Location data:", data.data);
+			console.log("Location data:", data.data);
+			if (isTestMode && data.data.host === "www.google.com") {
+				console.log("Test mode detected. Running with test data.");
+				importRoster(
+					eCrewDutiesDetails as ECrewDuty[],
+					eCrewFlightsDetails as ECrewFlight[],
+				)
+					.then(() => {
+						console.log("Data uploaded successfully. Closing bottom sheet.");
+						bottomSheetModalRef.current?.close();
+					})
+					.catch((error) => {
+						console.error("Failed to upload data:", error);
+					});
+				bottomSheetModalRef.current?.close();
+			}
 			// Handle the location data here
 			if (data.data.host === "ezy-crew.aims.aero") {
 				// Cover the webview with a white screen
@@ -262,7 +300,12 @@ function RootLayoutNav() {
 
 	// Effect to close bottom sheet when all duty details are received
 	useEffect(() => {
-		if (eventsData && receivedDutyDetails && eventIds.length > 0 && receivedDutyDetails.length === eventIds.length) {
+		if (
+			eventsData &&
+			receivedDutyDetails &&
+			eventIds.length > 0 &&
+			receivedDutyDetails.length === eventIds.length
+		) {
 			importRoster(eventsData, receivedDutyDetails)
 				.then(() => {
 					console.log("Data uploaded successfully. Closing bottom sheet.");
@@ -274,7 +317,7 @@ function RootLayoutNav() {
 				});
 			bottomSheetModalRef.current?.close();
 		}
-	}, [eventIds, receivedDutyDetails]);
+	}, [eventIds, receivedDutyDetails, eventsData]);
 
 	const spinValue = useRef(new Animated.Value(0)).current;
 
@@ -357,9 +400,18 @@ function RootLayoutNav() {
 							<BottomSheetView style={styles.bottomSheetView}>
 								<WebView
 									style={styles.webView}
-									injectedJavaScript={INJECTED_JAVASCRIPT}
+									// Test mode does not need injected JavaScript
+									injectedJavaScript={
+										isTestMode
+											? TEST_MODE_INJECTED_JAVASCRIPT
+											: INJECTED_JAVASCRIPT
+									}
 									onMessage={handleWebViewMessage}
-									source={{ uri: "https://ezy-crew.aims.aero/eCrew/Dashboard" }}
+									source={{
+										uri: isTestMode
+											? "https://google.com"
+											: "https://ezy-crew.aims.aero/eCrew/Dashboard",
+									}}
 									javaScriptEnabled={true}
 									domStorageEnabled={true}
 									startInLoadingState={true}
