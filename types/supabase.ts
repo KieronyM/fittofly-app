@@ -49,8 +49,9 @@ export type Database = {
           debrief_time: string | null
           duty_code: string
           duty_description: string
-          duty_id: number
+          duty_id: number | null
           duty_type: Database["public"]["Enums"]["duty_type"]
+          ecrew_duty_id: string
           end_time: string
           is_all_day: boolean
           raw_duty_id: number
@@ -66,8 +67,9 @@ export type Database = {
           debrief_time?: string | null
           duty_code: string
           duty_description: string
-          duty_id: number
+          duty_id?: number | null
           duty_type: Database["public"]["Enums"]["duty_type"]
+          ecrew_duty_id: string
           end_time: string
           is_all_day: boolean
           raw_duty_id?: number
@@ -83,8 +85,9 @@ export type Database = {
           debrief_time?: string | null
           duty_code?: string
           duty_description?: string
-          duty_id?: number
+          duty_id?: number | null
           duty_type?: Database["public"]["Enums"]["duty_type"]
+          ecrew_duty_id?: string
           end_time?: string
           is_all_day?: boolean
           raw_duty_id?: number
@@ -118,7 +121,7 @@ export type Database = {
           gate: string | null
           is_positioning: boolean
           origin: string
-          raw_duty_id: number
+          raw_duty_id: number | null
           raw_flight_id: number
           registration: string | null
           report_time: string | null
@@ -138,7 +141,7 @@ export type Database = {
           gate?: string | null
           is_positioning?: boolean
           origin: string
-          raw_duty_id: number
+          raw_duty_id?: number | null
           raw_flight_id?: number
           registration?: string | null
           report_time?: string | null
@@ -158,7 +161,7 @@ export type Database = {
           gate?: string | null
           is_positioning?: boolean
           origin?: string
-          raw_duty_id?: number
+          raw_duty_id?: number | null
           raw_flight_id?: number
           registration?: string | null
           report_time?: string | null
@@ -234,7 +237,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      duty_type: "Flight" | "Hotel" | "Default" | "Standby" | "Off"
+      duty_type: "Flight" | "Hotel" | "Default" | "Standby" | "Off" | "Training"
     }
     CompositeTypes: {
       [_ in never]: never
