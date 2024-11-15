@@ -151,7 +151,9 @@ export async function importRoster(eCrewDutiesDetails: ECrewDuty[], eCrewFlights
 
     console.log('Roster updated with raw_duty_ids and raw_flight_ids:', roster3);
 
-    // We also need to write back raw_flight_id to the raw_duty
+    // Now find current duties
+    // At this point, data has been loaded into the database, we now start the matching process
+    
 
 
   } catch (error) {
