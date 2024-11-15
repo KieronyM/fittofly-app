@@ -14,7 +14,8 @@ export async function importRoster(eCrewDutiesDetails: ECrewDuty[], eCrewFlights
     const { formattedStartDate, formattedEndDate } = findEarliestStartAndLatestEnd(eCrewDutiesDetails);
 
     // Create a roster - this will be a single record that will be inserted into the database
-    const rosterData = {
+    // roster1 is an object that holds the raw data items for a roster from AIMS but has no unique IDs
+    const roster1 = {
       start_date: formattedStartDate,
       end_date: formattedEndDate,
       user_id: userID,
@@ -30,9 +31,10 @@ export async function importRoster(eCrewDutiesDetails: ECrewDuty[], eCrewFlights
     };
 
     // Insert roster into SQL
-    const { data: roster, error: rosterError } = await supabase
+    // roster2 is the roster1 object with a unique ID and a created_at timestamp
+    const { data: roster2, error: rosterError } = await supabase
       .from('roster')
-      .insert(rosterData)
+      .insert(roster1)
       .select();
 
     if (rosterError) {
@@ -40,7 +42,7 @@ export async function importRoster(eCrewDutiesDetails: ECrewDuty[], eCrewFlights
       throw rosterError;
     }
 
-    console.log('Roster inserted:', roster);
+    console.log('Roster inserted:', roster2);
 
     // Loop through eCrewDutiesDetails to create rawDutyData
     // and for types of flight, also create corresponding
@@ -52,7 +54,7 @@ export async function importRoster(eCrewDutiesDetails: ECrewDuty[], eCrewFlights
     // Loop through eCrewDutiesDetails ready to insert into raw_duty
     for (const eCrewDutyDetails of eCrewDutiesDetails) {
       rawDutyData.push({
-        roster_id: roster[0].roster_id,
+        roster_id: roster2[0].roster_id,
         user_id: userID,
         ecrew_duty_id: eCrewDutyDetails.id,
         date: eCrewDutyDetails.start_date,
@@ -134,16 +136,20 @@ export async function importRoster(eCrewDutiesDetails: ECrewDuty[], eCrewFlights
     const rawFlightIDs = raw_flight.map(obj => obj.raw_flight_id);
 
     // Update the roster record with raw_duty_ids (calculated earlier) and raw_flight_ids
-    const { error: rosterWithRawDutyAndFlightIDsError } = await supabase
+    // NOTE: We might not need to do this depending on how we query the data later
+    // roster3 is the roster2 object with the raw_duty_ids and raw_flight_ids updated
+    const { data: roster3, error: roster3Error } = await supabase
       .from('roster')
       .update({ raw_duty_ids: rawDutyIDs, raw_flight_ids: rawFlightIDs })
-      .eq('roster_id', roster[0].roster_id)
+      .eq('roster_id', roster2[0].roster_id)
       .select();
 
-    if (rosterWithRawDutyAndFlightIDsError) {
-      console.error('Error updating raw_duty_ids and raw_flight_ids:', rosterWithRawDutyAndFlightIDsError);
-      throw rosterWithRawDutyAndFlightIDsError;
+    if (roster3Error) {
+      console.error('Error updating raw_duty_ids and raw_flight_ids:', roster3Error);
+      throw roster3Error;
     }
+
+    console.log('Roster updated with raw_duty_ids and raw_flight_ids:', roster3);
 
     // We also need to write back raw_flight_id to the raw_duty
 
