@@ -354,7 +354,7 @@ export type Database = {
             columns: ["raw_duty_period_id"]
             isOneToOne: false
             referencedRelation: "raw_duty_period"
-            referencedColumns: ["raw_duty_periodid"]
+            referencedColumns: ["raw_duty_period_id"]
           },
           {
             foreignKeyName: "raw_duty_roster_id_fkey"
@@ -371,11 +371,12 @@ export type Database = {
           date: string
           debrief_time: string | null
           duty_period_id: number | null
+          ecrew_duty_id: string
           end_time: string
           includes_flights: boolean
           includes_standby: boolean
           raw_duty_ids: number[]
-          raw_duty_periodid: number
+          raw_duty_period_id: number
           report_time: string | null
           roster_id: number
           start_time: string
@@ -386,11 +387,12 @@ export type Database = {
           date: string
           debrief_time?: string | null
           duty_period_id?: number | null
+          ecrew_duty_id: string
           end_time: string
           includes_flights: boolean
           includes_standby: boolean
           raw_duty_ids: number[]
-          raw_duty_periodid?: number
+          raw_duty_period_id?: number
           report_time?: string | null
           roster_id: number
           start_time: string
@@ -401,11 +403,12 @@ export type Database = {
           date?: string
           debrief_time?: string | null
           duty_period_id?: number | null
+          ecrew_duty_id?: string
           end_time?: string
           includes_flights?: boolean
           includes_standby?: boolean
           raw_duty_ids?: number[]
-          raw_duty_periodid?: number
+          raw_duty_period_id?: number
           report_time?: string | null
           roster_id?: number
           start_time?: string

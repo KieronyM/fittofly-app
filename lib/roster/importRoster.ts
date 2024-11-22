@@ -28,7 +28,7 @@ export async function importRoster(
 			old_duty_ids: [],
 			old_duty_period_ids: [],
 			raw_duty_ids: [],
-			raw_duty_period_ids: []
+			raw_duty_period_ids: [],
 		};
 
 		// Insert roster into SQL
@@ -71,7 +71,7 @@ export async function importRoster(
 						eCrewDutyDetails.type === "Flight" ? eCrewDutyDetails.end : null,
 					// TODO: Check this data is valid
 					is_all_day: eCrewDutyDetails.all_day === 1 ? true : false,
-          is_positioning: false
+					is_positioning: false,
 				});
 			}
 			// For duties that are not all day, create a raw duty period and raw duty record(s)
@@ -138,7 +138,7 @@ export async function importRoster(
 						debrief_time: null,
 						// TODO: Check this data is valid
 						is_all_day: false,
-            is_positioning: false
+						is_positioning: false,
 					});
 				}
 
@@ -146,6 +146,7 @@ export async function importRoster(
 				rawDutyPeriodData.push({
 					roster_id: roster2[0].roster_id,
 					user_id: userID,
+					ecrew_duty_id: eCrewDutyDetails.id,
 					date: eCrewDutyDetails.start_date,
 					report_time:
 						eCrewDutyDetails.type === "Flight" ? eCrewDutyDetails.start : null,
@@ -179,12 +180,23 @@ export async function importRoster(
 		// Get the raw_duty_ids
 		const rawDutyIDs = raw_duty.map((obj) => obj.raw_duty_id);
 
-		// TODO: Attach relevant raw_duty_ids to raw_duty_period and vice versa
+		const rawDutyPeriodDataWithRawDutyIDs = [];
+
+		// Loop through rawDutyPeriodData and add the relevant raw_duty_ids matched by ecrew_duty_id to a new array
+		for (const rawDutyPeriod of rawDutyPeriodData) {
+			const rawDutyIdsForPeriod = raw_duty
+				.filter((duty) => duty.ecrew_duty_id === rawDutyPeriod.ecrew_duty_id)
+				.map((duty) => duty.raw_duty_id);
+			rawDutyPeriodDataWithRawDutyIDs.push({
+				...rawDutyPeriod,
+				raw_duty_ids: rawDutyIdsForPeriod,
+			});
+		}
 
 		// Insert raw_duty_period records into database
 		const { data: raw_duty_period, error: rawDutyPeriodError } = await supabase
 			.from("raw_duty_period")
-			.insert(rawDutyPeriodData)
+			.insert(rawDutyPeriodDataWithRawDutyIDs)
 			.select();
 
 		if (rawDutyPeriodError) {
@@ -192,14 +204,21 @@ export async function importRoster(
 			throw rawDutyPeriodError;
 		}
 
+		// Get the raw_duty_period_ids
+		const rawDutyPeriodIDs = raw_duty_period.map(
+			(obj) => obj.raw_duty_period_id,
+		);
+
 		console.log("Inserted raw_duty_period records:", raw_duty_period);
 
-		// Update the roster record with raw_duty_ids (calculated earlier) and raw_flight_ids
+		// Update the roster record with raw_duty_ids and raw_duty_period_ids (calculated earlier)
 		// NOTE: We might not need to do this depending on how we query the data later
-		// roster3 is the roster2 object with the raw_duty_ids and raw_flight_ids updated
 		const { data: roster3, error: roster3Error } = await supabase
 			.from("roster")
-			.update({ raw_duty_ids: rawDutyIDs })
+			.update({
+				raw_duty_ids: rawDutyIDs,
+				raw_duty_period_ids: rawDutyPeriodIDs,
+			})
 			.eq("roster_id", roster2[0].roster_id)
 			.select();
 
@@ -212,14 +231,38 @@ export async function importRoster(
 		}
 
 		console.log(
-			"Roster updated with raw_duty_ids and raw_flight_ids:",
+			"Roster updated with raw_duty_ids and raw_duty_period_ids:",
 			roster3,
 		);
 
-		// Now create raw_duty_period records
-
 		// Now find current duties
 		// At this point, data has been loaded into the database, we now start the matching process
+
+		const { data: currentDuties, error: currentDutiesError } = await supabase
+			.from("duty")
+			.select("*")
+			.eq("user_id", userID)
+			.gte("date", formattedStartDate)
+			.lte("date", formattedEndDate);;
+
+		if (currentDutiesError) {
+			console.error("Error getting current duties:", currentDutiesError);
+			throw currentDutiesError;
+		}
+
+		const { data: currentDutyPeriods, error: currentDutyPeriodsError } = await supabase
+			.from("duty_period")
+			.select("*")
+			.eq("user_id", userID)
+			.gte("date", formattedStartDate)
+			.lte("date", formattedEndDate);
+
+		if (currentDutyPeriodsError) {
+			console.error("Error getting current duty periods:", currentDutyPeriodsError);
+			throw currentDutyPeriodsError;
+		}
+
+		
 	} catch (error) {
 		console.error("Error importing roster:", error);
 		throw error;
