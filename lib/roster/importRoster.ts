@@ -238,31 +238,33 @@ export async function importRoster(
 		// Now find current duties
 		// At this point, data has been loaded into the database, we now start the matching process
 
-		const { data: currentDuties, error: currentDutiesError } = await supabase
+		const { data: current_duty1, error: current_duty1Error } = await supabase
 			.from("duty")
 			.select("*")
 			.eq("user_id", userID)
+			.eq("is_current", true)
 			.gte("date", formattedStartDate)
 			.lte("date", formattedEndDate);;
 
-		if (currentDutiesError) {
-			console.error("Error getting current duties:", currentDutiesError);
-			throw currentDutiesError;
+		if (current_duty1Error) {
+			console.error("Error getting current duties:", current_duty1Error);
+			throw current_duty1Error;
 		}
 
-		const { data: currentDutyPeriods, error: currentDutyPeriodsError } = await supabase
+		const { data: current_duty_period1, error: current_duty_period1Error } = await supabase
 			.from("duty_period")
 			.select("*")
 			.eq("user_id", userID)
+			.eq("is_current", true)
 			.gte("date", formattedStartDate)
 			.lte("date", formattedEndDate);
 
-		if (currentDutyPeriodsError) {
-			console.error("Error getting current duty periods:", currentDutyPeriodsError);
-			throw currentDutyPeriodsError;
+		if (current_duty_period1Error) {
+			console.error("Error getting current duty periods:", current_duty_period1Error);
+			throw current_duty_period1Error;
 		}
 
-		
+
 	} catch (error) {
 		console.error("Error importing roster:", error);
 		throw error;
