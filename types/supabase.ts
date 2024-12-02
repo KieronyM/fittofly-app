@@ -108,6 +108,7 @@ export type Database = {
           roster_ids: number[]
           stand: string | null
           start_time: string | null
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -140,6 +141,7 @@ export type Database = {
           roster_ids: number[]
           stand?: string | null
           start_time?: string | null
+          updated_at?: string
           user_id?: string
         }
         Update: {
@@ -172,6 +174,7 @@ export type Database = {
           roster_ids?: number[]
           stand?: string | null
           start_time?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -179,38 +182,47 @@ export type Database = {
       duty_match: {
         Row: {
           created_at: string
-          day: string
+          date: string
           duty_id: number | null
+          duty_period_id: number | null
           id: number
-          is_found: boolean | null
+          is_found: boolean
           match_type: Database["public"]["Enums"]["match_types"]
           no_of_changes: number | null
           old_duty_id: number | null
-          raw_duty_id: number | null
+          old_duty_period_id: number | null
+          raw_duty_id: number
+          raw_duty_period_id: number | null
           roster_id: number
         }
         Insert: {
           created_at?: string
-          day: string
+          date: string
           duty_id?: number | null
+          duty_period_id?: number | null
           id?: number
-          is_found?: boolean | null
+          is_found: boolean
           match_type: Database["public"]["Enums"]["match_types"]
           no_of_changes?: number | null
           old_duty_id?: number | null
-          raw_duty_id?: number | null
+          old_duty_period_id?: number | null
+          raw_duty_id: number
+          raw_duty_period_id?: number | null
           roster_id: number
         }
         Update: {
           created_at?: string
-          day?: string
+          date?: string
           duty_id?: number | null
+          duty_period_id?: number | null
           id?: number
-          is_found?: boolean | null
+          is_found?: boolean
           match_type?: Database["public"]["Enums"]["match_types"]
           no_of_changes?: number | null
           old_duty_id?: number | null
-          raw_duty_id?: number | null
+          old_duty_period_id?: number | null
+          raw_duty_id?: number
+          raw_duty_period_id?: number | null
           roster_id?: number
         }
         Relationships: []

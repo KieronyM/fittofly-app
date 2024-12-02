@@ -1,6 +1,8 @@
 import { ECrewDuty, ECrewFlight } from "@/types/eCrew";
+import { Database } from "@/types/supabase";
 import { supabase } from "@/utils/supabase";
 import { findEarliestStartAndLatestEnd } from "@/utils/times";
+import { getObjectDiff, isEqual } from "../utils";
 
 export async function importRoster(
 	eCrewDutiesDetails: ECrewDuty[],
@@ -212,7 +214,7 @@ export async function importRoster(
 		console.log("Inserted raw_duty_period records:", raw_duty_period);
 
 		// Loop through raw_duty_period and extract the raw_duty_ids. We need an array of objects where the ID is the raw_duty_id and the value is the raw_duty_period_id
-		const rawDutiesWithRawDutyPeriodIDs = raw_duty_period.flatMap((obj) => 
+		const rawDutiesWithRawDutyPeriodIDs = raw_duty_period.flatMap((obj) =>
 			obj.raw_duty_ids.map((rawDutyID) => {
 				const duty = raw_duty.find((d) => d.raw_duty_id === rawDutyID);
 				if (!duty) {
@@ -231,7 +233,7 @@ export async function importRoster(
 					ecrew_duty_id: duty.ecrew_duty_id,
 					raw_duty_id: duty.raw_duty_id,
 				};
-			})
+			}),
 		);
 
 		// Upsert the updated rawDuty records into the database
@@ -282,33 +284,283 @@ export async function importRoster(
 		// Now find current duties
 		// At this point, data has been loaded into the database, we now start the matching process
 
+		// DRAW.IO DUTY_MATCHING - 1. Import current data for roster period
 		const { data: current_duty1, error: current_duty1Error } = await supabase
 			.from("duty")
 			.select("*")
 			.eq("user_id", userID)
 			.eq("is_current", true)
 			.gte("date", formattedStartDate)
-			.lte("date", formattedEndDate);;
+			.lte("date", formattedEndDate);
 
 		if (current_duty1Error) {
 			console.error("Error getting current duties:", current_duty1Error);
 			throw current_duty1Error;
 		}
 
-		const { data: current_duty_period1, error: current_duty_period1Error } = await supabase
-			.from("duty_period")
-			.select("*")
-			.eq("user_id", userID)
-			.eq("is_current", true)
-			.gte("date", formattedStartDate)
-			.lte("date", formattedEndDate);
+		console.log("Current duties:", current_duty1);
+
+		const { data: current_duty_period1, error: current_duty_period1Error } =
+			await supabase
+				.from("duty_period")
+				.select("*")
+				.eq("user_id", userID)
+				.eq("is_current", true)
+				.gte("date", formattedStartDate)
+				.lte("date", formattedEndDate);
 
 		if (current_duty_period1Error) {
-			console.error("Error getting current duty periods:", current_duty_period1Error);
+			console.error(
+				"Error getting current duty periods:",
+				current_duty_period1Error,
+			);
 			throw current_duty_period1Error;
 		}
 
+		console.log("Current duty periods:", current_duty_period1);
 
+		const dutiesToUpsert = [];
+		const dutiesToInsert = [];
+		const dutyMatchesToInsert = [];
+		const changeLogToInsert = [];
+		// 2.1 Find corresponding current_duty to incoming raw_duty
+		// Loop through rawDuty2
+		for (const rawDuty of rawDuty2) {
+			// Find the corresponding current_duty
+			const correspondingCurrentDuty = current_duty1.find(
+				(duty) =>
+					duty.date === rawDuty.date &&
+					duty.duty_type === rawDuty.duty_type &&
+					duty.duty_code === rawDuty.duty_code &&
+					duty.flight_number === rawDuty.flight_number,
+			);
+			if (correspondingCurrentDuty) {
+				console.log(
+					"Corresponding current duty found:",
+					correspondingCurrentDuty,
+				);
+				// 2.2
+				// Compare the current duty with the raw duty to see if any of the fields have changed
+
+				const currentDutyForComparison = {
+					report_time: correspondingCurrentDuty.report_time,
+					start_time: correspondingCurrentDuty.start_time,
+					end_time: correspondingCurrentDuty.end_time,
+					debrief_time: correspondingCurrentDuty.debrief_time,
+					delay_hhmm: correspondingCurrentDuty.delay_hhmm,
+					is_all_day: correspondingCurrentDuty.is_all_day,
+					flight_number: correspondingCurrentDuty.flight_number,
+					origin: correspondingCurrentDuty.origin,
+					destination: correspondingCurrentDuty.destination,
+					aircraft: correspondingCurrentDuty.aircraft,
+					registration: correspondingCurrentDuty.registration,
+					gate: correspondingCurrentDuty.gate,
+					stand: correspondingCurrentDuty.stand,
+					expected_pax: correspondingCurrentDuty.expected_pax,
+					distance_nm: correspondingCurrentDuty.distance_nm,
+					is_positioning: correspondingCurrentDuty.is_positioning,
+				};
+
+				const rawDutyForComparison = {
+					report_time: rawDuty.report_time,
+					start_time: rawDuty.start_time,
+					end_time: rawDuty.end_time,
+					debrief_time: rawDuty.debrief_time,
+					delay_hhmm: rawDuty.delay_hhmm,
+					is_all_day: rawDuty.is_all_day,
+					flight_number: rawDuty.flight_number,
+					origin: rawDuty.origin,
+					destination: rawDuty.destination,
+					aircraft: rawDuty.aircraft,
+					registration: rawDuty.registration,
+					gate: rawDuty.gate,
+					stand: rawDuty.stand,
+					expected_pax: rawDuty.expected_pax,
+					distance_nm: rawDuty.distance_nm,
+					is_positioning: rawDuty.is_positioning,
+				};
+
+				if (!isEqual(currentDutyForComparison, rawDutyForComparison)) {
+					console.log("Duty has changed:");
+					// 2.2.2
+					const changedFields = getObjectDiff(
+						currentDutyForComparison,
+						rawDutyForComparison,
+					);
+					console.log("Diff:", changedFields);
+
+					// Invalidating the current duty
+					dutiesToUpsert.push({
+						...correspondingCurrentDuty,
+						is_current: false,
+						current_to: new Date().toISOString(),
+						updated_at: new Date().toISOString(),
+					});
+
+					// Create a duty match record
+					dutyMatchesToInsert.push({
+						roster_id: rawDuty.roster_id,
+						old_duty_id: correspondingCurrentDuty.duty_id,
+						raw_duty_id: rawDuty.raw_duty_id,
+						is_found: true,
+						no_of_changes: changedFields.length,
+						match_type: "Update" as Database["public"]["Enums"]["match_types"],
+						date: rawDuty.date,
+					});
+
+					// Remove unused properties from rawDuty
+					const {
+						ecrew_duty_id,
+						duty_id,
+						raw_duty_period_id,
+						raw_duty_id,
+						roster_id,
+						...dutyFieldsWithoutEcrewDutyIdAndDutyId
+					} = rawDuty;
+
+					// Create a new duty record
+					dutiesToInsert.push({
+						...dutyFieldsWithoutEcrewDutyIdAndDutyId,
+						is_current: true,
+						roster_ids: [rawDuty.roster_id],
+						raw_duty_ids: [rawDuty.raw_duty_id],
+					});
+
+					// 2.2.2.1
+					// Create a change log record for each changed data item and their values
+					for (const field of changedFields) {
+						changeLogToInsert.push({
+							duty_date: rawDuty.date,
+							roster_id: rawDuty.roster_id,
+							user_id: userID,
+							raw_duty_id: rawDuty.raw_duty_id,
+							raw_duty_period_id: rawDuty.raw_duty_period_id,
+							from_duty_id: correspondingCurrentDuty.duty_id,
+							// We don't yet know the to_duty_id
+							from_duty_period_id: correspondingCurrentDuty.duty_period_id,
+							// We also don't know the to_duty_period_id
+							change_code: "update" as Database["public"]["Enums"]["change_codes"],
+							data_item: field,
+							// @ts-ignore
+							from_value: currentDutyForComparison[field],
+							// @ts-ignore
+							to_value: rawDutyForComparison[field],
+							// TODO: This will be the date the change needed to be picked up
+							effective_change_date: new Date().toISOString(),
+						});
+					}
+				} else {
+					console.log("Duty has not changed:");
+					// 2.2.1
+					// The duty has not changed, so we need to update the roster_ids and raw_duty_ids
+					dutiesToUpsert.push({
+						...correspondingCurrentDuty,
+						roster_ids: [
+							...(correspondingCurrentDuty.roster_ids || []),
+							rawDuty.roster_id,
+						],
+						raw_duty_ids: [
+							...(correspondingCurrentDuty.raw_duty_ids || []),
+							rawDuty.raw_duty_id,
+						],
+						updated_at: new Date().toISOString(),
+					});
+
+					dutyMatchesToInsert.push({
+						roster_id: rawDuty.roster_id,
+						duty_id: correspondingCurrentDuty.duty_id,
+						raw_duty_id: rawDuty.raw_duty_id,
+						is_found: true,
+						no_of_changes: 0,
+						match_type: "Match" as Database["public"]["Enums"]["match_types"],
+						date: rawDuty.date,
+					});
+				}
+			} else {
+				console.log(
+					"No corresponding current duty found for raw duty:",
+					rawDuty,
+				);
+				// 2.3
+				// These will be new duty records
+
+				// Remove unused properties from rawDuty
+				const {
+					ecrew_duty_id,
+					duty_id,
+					raw_duty_period_id,
+					raw_duty_id,
+					roster_id,
+					...dutyFieldsWithoutEcrewDutyIdAndDutyId
+				} = rawDuty;
+
+				dutiesToUpsert.push({
+					...dutyFieldsWithoutEcrewDutyIdAndDutyId,
+					is_current: true,
+					roster_ids: [rawDuty.roster_id],
+					raw_duty_ids: [rawDuty.raw_duty_id],
+				});
+
+				dutyMatchesToInsert.push({
+					roster_id: rawDuty.roster_id,
+					raw_duty_id: rawDuty.raw_duty_id,
+					is_found: false,
+					match_type: "New" as Database["public"]["Enums"]["match_types"],
+					date: rawDuty.date,
+				});
+			}
+		}
+
+		// Upsert these new duties into the database
+		const { data: currentDuty2, error: currentDuty2Error } = await supabase
+			.from("duty")
+			.upsert(dutiesToUpsert, {
+				onConflict: "duty_id",
+				ignoreDuplicates: false,
+			})
+			.select();
+
+		if (currentDuty2Error) {
+			console.error("Error inserting duties:", currentDuty2Error);
+			throw currentDuty2Error;
+		}
+
+		console.log("Upserted duties:", currentDuty2);
+
+		// Insert the duties into the database
+		const { data: currentDuty3, error: currentDuty3Error } = await supabase
+			.from("duty")
+			.insert(dutiesToInsert)
+			.select();
+
+		if (currentDuty3Error) {
+			console.error("Error inserting duties:", currentDuty3Error);
+			throw currentDuty3Error;
+		}
+
+		console.log("Inserted duties:", currentDuty3);
+
+		// Insert the duty matches into the database
+		const { data: currentDutyMatch2, error: currentDutyMatch2Error } =
+			await supabase.from("duty_match").insert(dutyMatchesToInsert).select();
+
+		if (currentDutyMatch2Error) {
+			console.error("Error inserting duty matches:", currentDutyMatch2Error);
+			throw currentDutyMatch2Error;
+		}
+
+		// Insert the change log into the database
+		const { data: changeLog2, error: changeLog2Error } = await supabase
+			.from("change_log")
+			.insert(changeLogToInsert)
+			.select();
+
+		if (changeLog2Error) {
+			console.error("Error inserting change log:", changeLog2Error);
+			throw changeLog2Error;
+		}
+
+		console.log("Inserted change log:", changeLog2);
 	} catch (error) {
 		console.error("Error importing roster:", error);
 		throw error;
