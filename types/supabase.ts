@@ -16,6 +16,7 @@ export type Database = {
           created_at: string
           data_item: string
           duty_date: string
+          duty_match_id: number | null
           effective_change_date: string
           from_duty_id: number | null
           from_duty_period_id: number | null
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           data_item: string
           duty_date: string
+          duty_match_id?: number | null
           effective_change_date?: string
           from_duty_id?: number | null
           from_duty_period_id?: number | null
@@ -52,6 +54,7 @@ export type Database = {
           created_at?: string
           data_item?: string
           duty_date?: string
+          duty_match_id?: number | null
           effective_change_date?: string
           from_duty_id?: number | null
           from_duty_period_id?: number | null
@@ -76,151 +79,217 @@ export type Database = {
       }
       duty: {
         Row: {
+          aircraft: string | null
           created_at: string
           current_from: string | null
           current_to: string | null
           date: string
           debrief_time: string | null
           delay_hhmm: string | null
+          destination: string | null
+          distance_nm: number | null
           duty_code: string
           duty_description: string
           duty_id: number
-          duty_period_hhmm: string | null
           duty_period_id: number | null
           duty_type: Database["public"]["Enums"]["duty_type"]
           end_time: string | null
-          flight_duty_period_hhmm: string | null
+          expected_pax: string | null
+          flight_number: string | null
+          gate: string | null
           indicators: string | null
           is_all_day: boolean | null
           is_current: boolean | null
+          is_positioning: boolean | null
+          origin: string | null
           raw_duty_ids: number[] | null
+          registration: string | null
           report_time: string | null
           roster_ids: number[]
-          sectors: number | null
+          stand: string | null
           start_time: string | null
           user_id: string
         }
         Insert: {
+          aircraft?: string | null
           created_at?: string
           current_from?: string | null
           current_to?: string | null
           date: string
           debrief_time?: string | null
           delay_hhmm?: string | null
+          destination?: string | null
+          distance_nm?: number | null
           duty_code: string
           duty_description: string
           duty_id?: number
-          duty_period_hhmm?: string | null
           duty_period_id?: number | null
           duty_type: Database["public"]["Enums"]["duty_type"]
           end_time?: string | null
-          flight_duty_period_hhmm?: string | null
+          expected_pax?: string | null
+          flight_number?: string | null
+          gate?: string | null
           indicators?: string | null
           is_all_day?: boolean | null
           is_current?: boolean | null
+          is_positioning?: boolean | null
+          origin?: string | null
           raw_duty_ids?: number[] | null
+          registration?: string | null
           report_time?: string | null
           roster_ids: number[]
-          sectors?: number | null
+          stand?: string | null
           start_time?: string | null
           user_id?: string
         }
         Update: {
+          aircraft?: string | null
           created_at?: string
           current_from?: string | null
           current_to?: string | null
           date?: string
           debrief_time?: string | null
           delay_hhmm?: string | null
+          destination?: string | null
+          distance_nm?: number | null
           duty_code?: string
           duty_description?: string
           duty_id?: number
-          duty_period_hhmm?: string | null
           duty_period_id?: number | null
           duty_type?: Database["public"]["Enums"]["duty_type"]
           end_time?: string | null
-          flight_duty_period_hhmm?: string | null
+          expected_pax?: string | null
+          flight_number?: string | null
+          gate?: string | null
           indicators?: string | null
           is_all_day?: boolean | null
           is_current?: boolean | null
+          is_positioning?: boolean | null
+          origin?: string | null
           raw_duty_ids?: number[] | null
+          registration?: string | null
           report_time?: string | null
           roster_ids?: number[]
-          sectors?: number | null
+          stand?: string | null
           start_time?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      duty_match: {
+        Row: {
+          created_at: string
+          day: string
+          duty_id: number | null
+          id: number
+          is_found: boolean | null
+          match_type: Database["public"]["Enums"]["match_types"]
+          no_of_changes: number | null
+          old_duty_id: number | null
+          raw_duty_id: number | null
+          roster_id: number
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          duty_id?: number | null
+          id?: number
+          is_found?: boolean | null
+          match_type: Database["public"]["Enums"]["match_types"]
+          no_of_changes?: number | null
+          old_duty_id?: number | null
+          raw_duty_id?: number | null
+          roster_id: number
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          duty_id?: number | null
+          id?: number
+          is_found?: boolean | null
+          match_type?: Database["public"]["Enums"]["match_types"]
+          no_of_changes?: number | null
+          old_duty_id?: number | null
+          raw_duty_id?: number | null
+          roster_id?: number
         }
         Relationships: []
       }
       duty_period: {
         Row: {
           created_at: string
-          current_from: string | null
+          current_from: string
           current_to: string | null
-          debrief_time: string | null
+          date: string
+          debrief_time: string
           delay_hhmm: string | null
-          duty_ids: string | null
+          duty_ids: number[]
           duty_period_hhmm: string | null
           duty_period_id: number
-          duty_types: number | null
+          duty_types: Database["public"]["Enums"]["duty_type"][]
           earliest_dp_start_time: string | null
           earliest_nxt_dp_start_time: string | null
-          end_time: string | null
+          end_time: string
           flight_duty_period_hhmm: string | null
-          flight_ids: string | null
-          is_current: boolean | null
+          is_current: boolean
           max_fdp: string | null
           max_fdp_tolerance_hhmm: string | null
-          report_time: string | null
-          sectors: number | null
-          start_time: string | null
-          user_id: string | null
+          raw_duty_period_ids: string[]
+          report_time: string
+          roster_ids: number[]
+          sectors: number
+          start_time: string
+          user_id: string
         }
         Insert: {
           created_at?: string
-          current_from?: string | null
+          current_from?: string
           current_to?: string | null
-          debrief_time?: string | null
+          date: string
+          debrief_time: string
           delay_hhmm?: string | null
-          duty_ids?: string | null
+          duty_ids: number[]
           duty_period_hhmm?: string | null
           duty_period_id?: number
-          duty_types?: number | null
+          duty_types: Database["public"]["Enums"]["duty_type"][]
           earliest_dp_start_time?: string | null
           earliest_nxt_dp_start_time?: string | null
-          end_time?: string | null
+          end_time: string
           flight_duty_period_hhmm?: string | null
-          flight_ids?: string | null
-          is_current?: boolean | null
+          is_current: boolean
           max_fdp?: string | null
           max_fdp_tolerance_hhmm?: string | null
-          report_time?: string | null
-          sectors?: number | null
-          start_time?: string | null
-          user_id?: string | null
+          raw_duty_period_ids: string[]
+          report_time: string
+          roster_ids: number[]
+          sectors: number
+          start_time: string
+          user_id: string
         }
         Update: {
           created_at?: string
-          current_from?: string | null
+          current_from?: string
           current_to?: string | null
-          debrief_time?: string | null
+          date?: string
+          debrief_time?: string
           delay_hhmm?: string | null
-          duty_ids?: string | null
+          duty_ids?: number[]
           duty_period_hhmm?: string | null
           duty_period_id?: number
-          duty_types?: number | null
+          duty_types?: Database["public"]["Enums"]["duty_type"][]
           earliest_dp_start_time?: string | null
           earliest_nxt_dp_start_time?: string | null
-          end_time?: string | null
+          end_time?: string
           flight_duty_period_hhmm?: string | null
-          flight_ids?: string | null
-          is_current?: boolean | null
+          is_current?: boolean
           max_fdp?: string | null
           max_fdp_tolerance_hhmm?: string | null
-          report_time?: string | null
-          sectors?: number | null
-          start_time?: string | null
-          user_id?: string | null
+          raw_duty_period_ids?: string[]
+          report_time?: string
+          roster_ids?: number[]
+          sectors?: number
+          start_time?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -286,6 +355,7 @@ export type Database = {
           roster_id: number
           stand: string | null
           start_time: string
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -316,6 +386,7 @@ export type Database = {
           roster_id: number
           stand?: string | null
           start_time: string
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -346,6 +417,7 @@ export type Database = {
           roster_id?: number
           stand?: string | null
           start_time?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -370,6 +442,7 @@ export type Database = {
           created_at: string
           date: string
           debrief_time: string | null
+          duty_ids: string | null
           duty_period_id: number | null
           ecrew_duty_id: string
           end_time: string
@@ -380,12 +453,14 @@ export type Database = {
           report_time: string | null
           roster_id: number
           start_time: string
+          updated_at: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
           date: string
           debrief_time?: string | null
+          duty_ids?: string | null
           duty_period_id?: number | null
           ecrew_duty_id: string
           end_time: string
@@ -396,12 +471,14 @@ export type Database = {
           report_time?: string | null
           roster_id: number
           start_time: string
+          updated_at?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
           date?: string
           debrief_time?: string | null
+          duty_ids?: string | null
           duty_period_id?: number | null
           ecrew_duty_id?: string
           end_time?: string
@@ -412,6 +489,7 @@ export type Database = {
           report_time?: string | null
           roster_id?: number
           start_time?: string
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: []
@@ -428,6 +506,7 @@ export type Database = {
           raw_duty_period_ids: number[]
           roster_id: number
           start_date: string
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -441,6 +520,7 @@ export type Database = {
           raw_duty_period_ids: number[]
           roster_id?: number
           start_date: string
+          updated_at?: string
           user_id?: string
         }
         Update: {
@@ -454,6 +534,7 @@ export type Database = {
           raw_duty_period_ids?: number[]
           roster_id?: number
           start_date?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -468,6 +549,7 @@ export type Database = {
     Enums: {
       change_codes: "create" | "update" | "delete"
       duty_type: "Flight" | "Hotel" | "Default" | "Standby" | "Off" | "Training"
+      match_types: "New" | "Match" | "Update" | "Delete"
     }
     CompositeTypes: {
       [_ in never]: never

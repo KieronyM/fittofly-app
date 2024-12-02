@@ -211,11 +211,51 @@ export async function importRoster(
 
 		console.log("Inserted raw_duty_period records:", raw_duty_period);
 
+		// Loop through raw_duty_period and extract the raw_duty_ids. We need an array of objects where the ID is the raw_duty_id and the value is the raw_duty_period_id
+		const rawDutiesWithRawDutyPeriodIDs = raw_duty_period.flatMap((obj) => 
+			obj.raw_duty_ids.map((rawDutyID) => {
+				const duty = raw_duty.find((d) => d.raw_duty_id === rawDutyID);
+				if (!duty) {
+					throw new Error(`Could not find duty with ID ${rawDutyID}`);
+				}
+				return {
+					...duty,
+					updated_at: new Date().toISOString(),
+					date: obj.date,
+					raw_duty_period_id: obj.raw_duty_period_id,
+					// Ensure required fields are present and not undefined
+					duty_code: duty.duty_code,
+					duty_description: duty.duty_description,
+					duty_type: duty.duty_type,
+					user_id: duty.user_id,
+					ecrew_duty_id: duty.ecrew_duty_id,
+					raw_duty_id: duty.raw_duty_id,
+				};
+			})
+		);
+
+		// Upsert the updated rawDuty records into the database
+		const { data: rawDuty2, error: rawDuty2Error } = await supabase
+			.from("raw_duty")
+			.upsert(rawDutiesWithRawDutyPeriodIDs, {
+				onConflict: "raw_duty_id",
+				ignoreDuplicates: false,
+			})
+			.select();
+
+		if (rawDuty2Error) {
+			console.error("Error upserting raw_duty:", rawDuty2Error);
+			throw rawDuty2Error;
+		}
+
+		console.log("Upserted raw_duty records:", rawDuty2);
+
 		// Update the roster record with raw_duty_ids and raw_duty_period_ids (calculated earlier)
 		// NOTE: We might not need to do this depending on how we query the data later
 		const { data: roster3, error: roster3Error } = await supabase
 			.from("roster")
 			.update({
+				updated_at: new Date().toISOString(),
 				raw_duty_ids: rawDutyIDs,
 				raw_duty_period_ids: rawDutyPeriodIDs,
 			})
@@ -234,6 +274,10 @@ export async function importRoster(
 			"Roster updated with raw_duty_ids and raw_duty_period_ids:",
 			roster3,
 		);
+
+		// ------------------------------------------------------------------------------------------------
+		// IMPORT ROSTER FINISHED, BEGIN DUTY MATCHING
+		// ------------------------------------------------------------------------------------------------
 
 		// Now find current duties
 		// At this point, data has been loaded into the database, we now start the matching process
