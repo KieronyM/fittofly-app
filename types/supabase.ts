@@ -81,7 +81,7 @@ export type Database = {
         Row: {
           aircraft: string | null
           created_at: string
-          current_from: string | null
+          current_from: string
           current_to: string | null
           date: string
           debrief_time: string | null
@@ -99,7 +99,7 @@ export type Database = {
           gate: string | null
           indicators: string | null
           is_all_day: boolean | null
-          is_current: boolean | null
+          is_current: boolean
           is_positioning: boolean | null
           origin: string | null
           raw_duty_ids: number[] | null
@@ -114,7 +114,7 @@ export type Database = {
         Insert: {
           aircraft?: string | null
           created_at?: string
-          current_from?: string | null
+          current_from?: string
           current_to?: string | null
           date: string
           debrief_time?: string | null
@@ -132,7 +132,7 @@ export type Database = {
           gate?: string | null
           indicators?: string | null
           is_all_day?: boolean | null
-          is_current?: boolean | null
+          is_current: boolean
           is_positioning?: boolean | null
           origin?: string | null
           raw_duty_ids?: number[] | null
@@ -147,7 +147,7 @@ export type Database = {
         Update: {
           aircraft?: string | null
           created_at?: string
-          current_from?: string | null
+          current_from?: string
           current_to?: string | null
           date?: string
           debrief_time?: string | null
@@ -165,7 +165,7 @@ export type Database = {
           gate?: string | null
           indicators?: string | null
           is_all_day?: boolean | null
-          is_current?: boolean | null
+          is_current?: boolean
           is_positioning?: boolean | null
           origin?: string | null
           raw_duty_ids?: number[] | null
@@ -191,7 +191,7 @@ export type Database = {
           no_of_changes: number | null
           old_duty_id: number | null
           old_duty_period_id: number | null
-          raw_duty_id: number
+          raw_duty_id: number | null
           raw_duty_period_id: number | null
           roster_id: number
         }
@@ -206,7 +206,7 @@ export type Database = {
           no_of_changes?: number | null
           old_duty_id?: number | null
           old_duty_period_id?: number | null
-          raw_duty_id: number
+          raw_duty_id?: number | null
           raw_duty_period_id?: number | null
           roster_id: number
         }
@@ -221,7 +221,7 @@ export type Database = {
           no_of_changes?: number | null
           old_duty_id?: number | null
           old_duty_period_id?: number | null
-          raw_duty_id?: number
+          raw_duty_id?: number | null
           raw_duty_period_id?: number | null
           roster_id?: number
         }
