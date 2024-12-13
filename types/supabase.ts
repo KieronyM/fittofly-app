@@ -14,7 +14,7 @@ export type Database = {
           change_code: Database["public"]["Enums"]["change_codes"]
           change_id: number
           created_at: string
-          data_item: string
+          data_item: string | null
           duty_date: string
           duty_match_id: number | null
           effective_change_date: string
@@ -33,7 +33,7 @@ export type Database = {
           change_code: Database["public"]["Enums"]["change_codes"]
           change_id?: number
           created_at?: string
-          data_item: string
+          data_item?: string | null
           duty_date: string
           duty_match_id?: number | null
           effective_change_date?: string
@@ -52,7 +52,7 @@ export type Database = {
           change_code?: Database["public"]["Enums"]["change_codes"]
           change_id?: number
           created_at?: string
-          data_item?: string
+          data_item?: string | null
           duty_date?: string
           duty_match_id?: number | null
           effective_change_date?: string
@@ -559,7 +559,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      change_codes: "create" | "update" | "delete"
+      change_codes: "New" | "Update" | "Delete"
       duty_type: "Flight" | "Hotel" | "Default" | "Standby" | "Off" | "Training"
       match_types: "New" | "Match" | "Update" | "Delete"
     }

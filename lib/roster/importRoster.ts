@@ -452,7 +452,7 @@ export async function importRoster(
 							// We don't yet know the to_duty_id
 							from_duty_period_id: correspondingCurrentDuty.duty_period_id,
 							// We also don't know the to_duty_period_id
-							change_code: "update" as Database["public"]["Enums"]["change_codes"],
+							change_code: "Update" as Database["public"]["Enums"]["change_codes"],
 							data_item: field,
 							// @ts-ignore
 							from_value: currentDutyForComparison[field],
@@ -554,6 +554,23 @@ export async function importRoster(
 					match_type: "Delete" as Database["public"]["Enums"]["match_types"],
 					date: currentDuty.date,
 				});
+
+				// Create a change log record
+				changeLogToInsert.push({
+					duty_date: currentDuty.date,
+					roster_id: roster3[0].roster_id,
+					user_id: userID,
+					raw_duty_id: null,
+					raw_duty_period_id: null,
+					from_duty_id: currentDuty.duty_id,
+					from_duty_period_id: currentDuty.duty_period_id,
+					change_code: "Delete" as Database["public"]["Enums"]["change_codes"],
+					data_item: null,
+					from_value: null,
+					to_value: null,
+					// TODO: This will be the date the change needed to be picked up
+					effective_change_date: new Date().toISOString(),
+				});
 			}
 		}
 
@@ -611,6 +628,45 @@ export async function importRoster(
 			return dutyMatch;
 		});
 
+		// Also add all 'New' records to the change log
+		dutyMatchesToInsert.forEach((dutyMatch) => {
+			if (dutyMatch.match_type === "New") {
+				changeLogToInsert.push({
+					duty_date: dutyMatch.date,
+					user_id: userID,
+					roster_id: dutyMatch.roster_id,
+					raw_duty_id: dutyMatch.raw_duty_id,
+					// This is not on the duty_match yet
+					raw_duty_period_id: null,
+					from_duty_id: null,
+					from_duty_period_id: null,
+					to_duty_id: dutyMatch.duty_id,
+					// This is not on the duty_match yet
+					to_duty_period_id: null,
+					change_code: "New" as Database["public"]["Enums"]["change_codes"],
+					data_item: null,
+					from_value: null,
+					to_value: null,
+					// TODO: This will be the date the change needed to be picked up
+					effective_change_date: new Date().toISOString(),
+				});
+			}
+		});
+
+		// Do the same for the change log
+		const completedChangeLogToInsert = changeLogToInsert.map((changeLog) => {
+			if (changeLog.change_code === "Update") {
+				const dutyId = dutyMatchesToInsert.find(
+					(dutyMatch) => dutyMatch.raw_duty_id === changeLog.raw_duty_id,
+				)?.duty_id;
+				return {
+					...changeLog,
+					to_duty_id: dutyId
+				};
+			}
+			return changeLog;
+		});
+
 		// Get all raw duties for this roster from the database
 		const { data: rawDuty3, error: rawDuty3Error } = await supabase
 			.from("raw_duty")
@@ -659,7 +715,7 @@ export async function importRoster(
 		// Insert the change log into the database
 		const { data: changeLog2, error: changeLog2Error } = await supabase
 			.from("change_log")
-			.insert(changeLogToInsert)
+			.insert(completedChangeLogToInsert)
 			.select();
 
 		if (changeLog2Error) {
