@@ -237,7 +237,7 @@ export async function importRoster(
 		);
 
 		// Upsert the updated rawDuty records into the database
-		const { data: rawDuty2, error: rawDuty2Error } = await supabase
+		const { data: upsertedRawDuty, error: upsertedRawDutyError } = await supabase
 			.from("raw_duty")
 			.upsert(rawDutiesWithRawDutyPeriodIDs, {
 				onConflict: "raw_duty_id",
@@ -245,12 +245,25 @@ export async function importRoster(
 			})
 			.select();
 
+		if (upsertedRawDutyError) {
+			console.error("Error upserting raw_duty:", upsertedRawDutyError);
+			throw upsertedRawDutyError;
+		}
+
+		console.log("Upserted raw_duty records:", upsertedRawDuty);
+
+		// Because we have upserted a partial set of raw_duty records, we need to get back all the raw_duty records for this roster
+		const { data: rawDuty2, error: rawDuty2Error } = await supabase
+			.from("raw_duty")
+			.select("*")
+			.eq("roster_id", roster2[0].roster_id);
+
 		if (rawDuty2Error) {
-			console.error("Error upserting raw_duty:", rawDuty2Error);
+			console.error("Error getting raw_duty:", rawDuty2Error);
 			throw rawDuty2Error;
 		}
 
-		console.log("Upserted raw_duty records:", rawDuty2);
+		console.log("Raw_duty records:", rawDuty2);
 
 		// Update the roster record with raw_duty_ids and raw_duty_period_ids (calculated earlier)
 		// NOTE: We might not need to do this depending on how we query the data later
@@ -546,40 +559,48 @@ export async function importRoster(
 
 		// 4. Write everything to the database
 		// Upsert these new duties into the database
-		const { data: currentDuty2, error: currentDuty2Error } = await supabase
+		const { error: upsertedCurrentDutiesError } = await supabase
 			.from("duty")
 			.upsert(dutiesToUpsert, {
 				onConflict: "duty_id",
 				ignoreDuplicates: false,
-			})
-			.select();
+			});
+
+		if (upsertedCurrentDutiesError) {
+			console.error("Error upserting duties:", upsertedCurrentDutiesError);
+			throw upsertedCurrentDutiesError;
+		}
+
+		// Insert the duties into the database
+		const { error: insertedCurrentDutiesError } = await supabase
+			.from("duty")
+			.insert(dutiesToInsert);
+
+		if (insertedCurrentDutiesError) {
+			console.error("Error inserting duties:", insertedCurrentDutiesError);
+			throw insertedCurrentDutiesError;
+		}
+
+		// Get all those duties again
+		const { data: currentDuty2, error: currentDuty2Error } = await supabase
+			.from("duty")
+			.select("*")
+			.eq("user_id", userID)
+			.eq("is_current", true)
+			.gte("date", formattedStartDate)
+			.lte("date", formattedEndDate);
 
 		if (currentDuty2Error) {
-			console.error("Error inserting duties:", currentDuty2Error);
+			console.error("Error getting duties:", currentDuty2Error);
 			throw currentDuty2Error;
 		}
 
-		console.log("Upserted duties:", currentDuty2);
-
-		// Insert the duties into the database
-		const { data: currentDuty3, error: currentDuty3Error } = await supabase
-			.from("duty")
-			.insert(dutiesToInsert)
-			.select();
-
-		if (currentDuty3Error) {
-			console.error("Error inserting duties:", currentDuty3Error);
-			throw currentDuty3Error;
-		}
-
-		console.log("Inserted duties:", currentDuty3);
-
-		const combinedDuties = [...currentDuty2, ...currentDuty3];
+		const dutyIds = currentDuty2.map((duty) => duty.duty_id);
 
 		// 5. Add duty IDs to duty matches where it is missing
 		dutyMatchesToInsert = dutyMatchesToInsert.map((dutyMatch) => {
 			if (dutyMatch.raw_duty_id && !dutyMatch.duty_id) {
-				const dutyId = combinedDuties.find(
+				const dutyId = currentDuty2.find(
 					(duty) => duty.raw_duty_ids?.includes(dutyMatch.raw_duty_id),
 				)?.duty_id;
 				return {
@@ -599,7 +620,7 @@ export async function importRoster(
 
 		// Also update the raw_duty records with the duty_id
 		const rawDutiesWithDutyIds = rawDuty2.map((rawDuty) => {
-			const dutyId = combinedDuties.find(
+			const dutyId = currentDuty2.find(
 				(duty) => duty.raw_duty_ids?.includes(rawDuty.raw_duty_id),
 			)?.duty_id;
 			return {
