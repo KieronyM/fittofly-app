@@ -196,7 +196,7 @@ export async function importRoster(
 		}
 
 		// Insert raw_duty_period records into database
-		const { data: raw_duty_period, error: rawDutyPeriodError } = await supabase
+		const { data: rawDutyPeriodWithRawIds, error: rawDutyPeriodError } = await supabase
 			.from("raw_duty_period")
 			.insert(rawDutyPeriodDataWithRawDutyIDs)
 			.select();
@@ -207,14 +207,14 @@ export async function importRoster(
 		}
 
 		// Get the raw_duty_period_ids
-		const rawDutyPeriodIDs = raw_duty_period.map(
+		const rawDutyPeriodIDs = rawDutyPeriodWithRawIds.map(
 			(obj) => obj.raw_duty_period_id,
 		);
 
-		console.log("Inserted raw_duty_period records:", raw_duty_period);
+		console.log("Inserted raw_duty_period records:", rawDutyPeriodWithRawIds);
 
 		// Loop through raw_duty_period and extract the raw_duty_ids. We need an array of objects where the ID is the raw_duty_id and the value is the raw_duty_period_id
-		const rawDutiesWithRawDutyPeriodIDs = raw_duty_period.flatMap((obj) =>
+		const rawDutiesWithRawDutyPeriodIDs = rawDutyPeriodWithRawIds.flatMap((obj) =>
 			obj.raw_duty_ids.map((rawDutyID) => {
 				const duty = raw_duty.find((d) => d.raw_duty_id === rawDutyID);
 				if (!duty) {
@@ -312,25 +312,25 @@ export async function importRoster(
 		}
 
 		console.log("Current duties:", current_duty1);
+		//HM can we move the duty period section to the start of the duty period matching process
+		// const { data: current_duty_period1, error: current_duty_period1Error } =
+		// 	await supabase
+		// 		.from("duty_period")
+		// 		.select("*")
+		// 		.eq("user_id", userID)
+		// 		.eq("is_current", true)
+		// 		.gte("date", formattedStartDate)
+		// 		.lte("date", formattedEndDate);
 
-		const { data: current_duty_period1, error: current_duty_period1Error } =
-			await supabase
-				.from("duty_period")
-				.select("*")
-				.eq("user_id", userID)
-				.eq("is_current", true)
-				.gte("date", formattedStartDate)
-				.lte("date", formattedEndDate);
+		// if (current_duty_period1Error) {
+		// 	console.error(
+		// 		"Error getting current duty periods:",
+		// 		current_duty_period1Error,
+		// 	);
+		// 	throw current_duty_period1Error;
+		// }
 
-		if (current_duty_period1Error) {
-			console.error(
-				"Error getting current duty periods:",
-				current_duty_period1Error,
-			);
-			throw current_duty_period1Error;
-		}
-
-		console.log("Current duty periods:", current_duty_period1);
+		// console.log("Current duty periods:", current_duty_period1);
 
 		const dutiesToUpsert = [];
 		const dutiesToInsert = [];
@@ -555,6 +555,7 @@ export async function importRoster(
 					date: currentDuty.date,
 				});
 
+
 				// Create a change log record
 				changeLogToInsert.push({
 					duty_date: currentDuty.date,
@@ -612,9 +613,44 @@ export async function importRoster(
 			throw currentDuty2Error;
 		}
 
+		
+		// Update and write roster to the database
+		// write all duty ids and old duty ids into array ready to populate the roster
 		const dutyIds = currentDuty2.map((duty) => duty.duty_id);
+		//HM
+		const oldDutyIds: number[] = dutyMatchesToInsert
+			// Only include entries where old_duty_id is not null
+			.filter((dutyMatch) => dutyMatch.old_duty_id !== null)
+			.map((dutyMatch) => dutyMatch.old_duty_id as number);
 
-		// 5. Add duty IDs to duty matches where it is missing
+		//HM we need to update the roster
+		// Update the roster record with duty_ids and old_duty_ids (calculated earlier)
+		const { data: roster4, error: roster4Error } = await supabase
+			.from("roster")
+			.update({
+				updated_at: new Date().toISOString(),
+				duty_ids: dutyIds,
+				old_duty_ids: oldDutyIds,
+			})
+			.eq("roster_id", roster3[0].roster_id)
+			.select();
+
+		if (roster4Error) {
+			console.error(
+				"Error updating duty_ids and old_duty_ids:",
+				roster4Error,
+			);
+			throw roster4Error;
+		}
+
+		console.log(
+			"Roster updated with duty_ids and old_duty_ids:",
+			roster4,
+		);
+
+
+
+		// 6. Add duty IDs to duty matches where it is missing
 		dutyMatchesToInsert = dutyMatchesToInsert.map((dutyMatch) => {
 			if (dutyMatch.raw_duty_id && !dutyMatch.duty_id) {
 				const dutyId = currentDuty2.find(
@@ -628,7 +664,7 @@ export async function importRoster(
 			return dutyMatch;
 		});
 
-		// Also add all 'New' records to the change log
+		// 7. Also add all 'New' records to the change log
 		dutyMatchesToInsert.forEach((dutyMatch) => {
 			if (dutyMatch.match_type === "New") {
 				changeLogToInsert.push({
@@ -653,7 +689,7 @@ export async function importRoster(
 			}
 		});
 
-		// Do the same for the change log
+		// 8. Do the same for the change log
 		const completedChangeLogToInsert = changeLogToInsert.map((changeLog) => {
 			if (changeLog.change_code === "Update") {
 				const dutyId = dutyMatchesToInsert.find(
@@ -667,14 +703,18 @@ export async function importRoster(
 			return changeLog;
 		});
 
-		// Get all raw duties for this roster from the database
+		// 9. Get all raw duties for this roster from the database
+		//HM i dont understand why we are doing this? we use rawDuty2 in the subsequent part and 
+		// raw duty not been processed in any of the duty matching code base above?
+		//if we dont do code below cld be for roster 2&3 nto 3&4
 		const { data: rawDuty3, error: rawDuty3Error } = await supabase
 			.from("raw_duty")
 			.select("*")
 			.eq("roster_id", roster3[0].roster_id);
 
 
-		// Also update the raw_duty records with the duty_id
+
+		// 10. Also update the raw_duty records with the duty_id
 		const rawDutiesWithDutyIds = rawDuty2.map((rawDuty) => {
 			const dutyId = currentDuty2.find(
 				(duty) => duty.raw_duty_ids?.includes(rawDuty.raw_duty_id),
@@ -685,7 +725,7 @@ export async function importRoster(
 			};
 		});
 
-		// Upsert the raw_duty records into the database
+		// 11. Upsert the raw_duty records into the database
 		const { data: rawDuty4, error: rawDuty4Error } = await supabase
 			.from("raw_duty")
 			.upsert(rawDutiesWithDutyIds, {
@@ -693,6 +733,9 @@ export async function importRoster(
 				ignoreDuplicates: false,
 			})
 			.select();
+		//HM constrain to records for this roster only?
+		//.select("*")
+		//.eq("roster_id", roster3[0].roster_id);
 
 		if (rawDuty4Error) {
 			console.error("Error upserting raw_duty:", rawDuty4Error);
@@ -701,9 +744,39 @@ export async function importRoster(
 
 		console.log("Upserted raw_duty:", rawDuty4);
 
-		// Insert the duty matches into the database
-		const { data: currentDutyMatch2, error: currentDutyMatch2Error } =
-			await supabase.from("duty_match").insert(dutyMatchesToInsert).select();
+//12 ?HM need to update raw_duty_period with dutyIds
+ const rawDutyPeriodDataWithDutyIDs = [];
+
+// 		// Loop through //rawDutyPeriodDataWithRawIds and add the relevant duty_ids
+//      // matched by ?? to a new array rawDutyPeriodWithDutyIds
+// 		
+
+
+// 		// Insert raw_duty_period records into database
+// 		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// 12. Insert the duty matches into the database
+		const { data: currentDutyMatch2, error: currentDutyMatch2Error } = await supabase
+			.from("duty_match")
+			.insert(dutyMatchesToInsert)
+			.select();
+		//HM constrain to records for this roster only?
+		//.select("*")
+		//.eq("roster_id", roster3[0].roster_id);
 
 		if (currentDutyMatch2Error) {
 			console.error("Error inserting duty matches:", currentDutyMatch2Error);
@@ -712,11 +785,14 @@ export async function importRoster(
 
 		console.log("Inserted duty matches:", currentDutyMatch2);
 
-		// Insert the change log into the database
+		// 13. Insert the change log into the database
 		const { data: changeLog2, error: changeLog2Error } = await supabase
 			.from("change_log")
 			.insert(completedChangeLogToInsert)
 			.select();
+		//HM constrain to records for this roster only?
+		//.select("*")
+		//.eq("roster_id", roster3[0].roster_id);
 
 		if (changeLog2Error) {
 			console.error("Error inserting change log:", changeLog2Error);
@@ -728,4 +804,29 @@ export async function importRoster(
 		console.error("Error importing roster:", error);
 		throw error;
 	}
-}
+
+	// ------------------------------------------------------------------------------------------------
+	// BEGIN DUTY MATCHING FINISHED, BEGIN DUTY PERIOD MATCHING
+	// ------------------------------------------------------------------------------------------------
+
+	// Find current dutY periods
+	// At this point, data has been loaded into the database, we now start the matching process
+// 	const { data: current_duty_period1, error: current_duty_period1Error } = await supabase
+// 		.from("duty_period")
+// 		.select("*")
+// 		.eq("user_id", userID)
+// 		.eq("is_current", true)
+// 		.gte("date", formattedStartDate)
+// 		.lte("date", formattedEndDate);
+
+// 	if (current_duty_period1Error) {
+// 		console.error(
+// 			"Error getting current duty periods:",
+// 			current_duty_period1Error,
+// 		);
+// 		throw current_duty_period1Error;
+// 	}
+
+// 	console.log("Current duty periods:", current_duty_period1);
+
+// }
