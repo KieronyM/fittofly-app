@@ -236,9 +236,9 @@ export type Database = {
           current_from: string
           current_to: string | null
           date: string
-          debrief_time: string
+          debrief_time: string | null
           delay_hhmm: string | null
-          duty_ids: number[]
+          duty_ids: number[] | null
           duty_period_hhmm: string | null
           duty_period_id: number
           earliest_dp_start_time: string | null
@@ -250,10 +250,10 @@ export type Database = {
           is_current: boolean
           max_fdp: string | null
           max_fdp_tolerance_hhmm: string | null
-          raw_duty_period_ids: string[]
-          report_time: string
+          raw_duty_period_ids: number[]
+          report_time: string | null
           roster_ids: number[]
-          sectors: number
+          sectors: number | null
           start_time: string
           updated_at: string | null
           user_id: string
@@ -263,9 +263,9 @@ export type Database = {
           current_from?: string
           current_to?: string | null
           date: string
-          debrief_time: string
+          debrief_time?: string | null
           delay_hhmm?: string | null
-          duty_ids: number[]
+          duty_ids?: number[] | null
           duty_period_hhmm?: string | null
           duty_period_id?: number
           earliest_dp_start_time?: string | null
@@ -277,10 +277,10 @@ export type Database = {
           is_current: boolean
           max_fdp?: string | null
           max_fdp_tolerance_hhmm?: string | null
-          raw_duty_period_ids: string[]
-          report_time: string
+          raw_duty_period_ids: number[]
+          report_time?: string | null
           roster_ids: number[]
-          sectors: number
+          sectors?: number | null
           start_time: string
           updated_at?: string | null
           user_id: string
@@ -290,9 +290,9 @@ export type Database = {
           current_from?: string
           current_to?: string | null
           date?: string
-          debrief_time?: string
+          debrief_time?: string | null
           delay_hhmm?: string | null
-          duty_ids?: number[]
+          duty_ids?: number[] | null
           duty_period_hhmm?: string | null
           duty_period_id?: number
           earliest_dp_start_time?: string | null
@@ -304,10 +304,10 @@ export type Database = {
           is_current?: boolean
           max_fdp?: string | null
           max_fdp_tolerance_hhmm?: string | null
-          raw_duty_period_ids?: string[]
-          report_time?: string
+          raw_duty_period_ids?: number[]
+          report_time?: string | null
           roster_ids?: number[]
-          sectors?: number
+          sectors?: number | null
           start_time?: string
           updated_at?: string | null
           user_id?: string

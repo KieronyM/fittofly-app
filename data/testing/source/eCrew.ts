@@ -2818,7 +2818,7 @@ export const eCrewFlightsDetails = [
                 "SelectedIndex": 0
             },
             {
-                "FlightNumber": "214",
+                "FlightNumber": "214A",
                 "AcType": "320",
                 "Registration": "G-UZHA",
                 "Gate": "-",
