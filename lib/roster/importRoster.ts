@@ -46,7 +46,7 @@ export async function importRoster(
 		}
 
 		console.log("Roster inserted:", roster2);
-		const rosterId = roster2[0].roster_id 
+		const rosterId = roster2[0].roster_id;
 
 		// 3. Loop through eCrewDutiesDetails to create rawDutyData
 		const rawDutyData = [];
@@ -183,7 +183,6 @@ export async function importRoster(
 		// 6. Get the raw_duty_ids
 		const rawDutyIDs = raw_duty.map((obj) => obj.raw_duty_id);
 
-
 		// 7. Loop through rawDutyPeriodData and add the relevant raw_duty_ids matched by ecrew_duty_id to a new array
 		const rawDutyPeriodDataWithRawDutyIDs = [];
 		for (const rawDutyPeriod of rawDutyPeriodData) {
@@ -197,10 +196,11 @@ export async function importRoster(
 		}
 
 		// 8. Insert raw_duty_period records into database
-		const { data: rawDutyPeriodWithRawIds, error: rawDutyPeriodError } = await supabase
-			.from("raw_duty_period")
-			.insert(rawDutyPeriodDataWithRawDutyIDs)
-			.select();
+		const { data: rawDutyPeriodWithRawIds, error: rawDutyPeriodError } =
+			await supabase
+				.from("raw_duty_period")
+				.insert(rawDutyPeriodDataWithRawDutyIDs)
+				.select();
 
 		if (rawDutyPeriodError) {
 			console.error("Error inserting raw_duty_period:", rawDutyPeriodError);
@@ -214,38 +214,40 @@ export async function importRoster(
 
 		console.log("Inserted raw_duty_period records:", rawDutyPeriodWithRawIds);
 
-		// 10. Loop through raw_duty_period and extract the raw_duty_ids. 
+		// 10. Loop through raw_duty_period and extract the raw_duty_ids.
 		// We need an array of objects where the ID is the raw_duty_id and the value is the raw_duty_period_id
-		const rawDutiesWithRawDutyPeriodIDs = rawDutyPeriodWithRawIds.flatMap((obj) =>
-			obj.raw_duty_ids.map((rawDutyID) => {
-				const duty = raw_duty.find((d) => d.raw_duty_id === rawDutyID);
-				if (!duty) {
-					throw new Error(`Could not find duty with ID ${rawDutyID}`);
-				}
-				return {
-					...duty,
-					updated_at: new Date().toISOString(),
-					date: obj.date,
-					raw_duty_period_id: obj.raw_duty_period_id,
-					// Ensure required fields are present and not undefined
-					duty_code: duty.duty_code,
-					duty_description: duty.duty_description,
-					duty_type: duty.duty_type,
-					user_id: duty.user_id,
-					ecrew_duty_id: duty.ecrew_duty_id,
-					raw_duty_id: duty.raw_duty_id,
-				};
-			}),
+		const rawDutiesWithRawDutyPeriodIDs = rawDutyPeriodWithRawIds.flatMap(
+			(obj) =>
+				obj.raw_duty_ids.map((rawDutyID) => {
+					const duty = raw_duty.find((d) => d.raw_duty_id === rawDutyID);
+					if (!duty) {
+						throw new Error(`Could not find duty with ID ${rawDutyID}`);
+					}
+					return {
+						...duty,
+						updated_at: new Date().toISOString(),
+						date: obj.date,
+						raw_duty_period_id: obj.raw_duty_period_id,
+						// Ensure required fields are present and not undefined
+						duty_code: duty.duty_code,
+						duty_description: duty.duty_description,
+						duty_type: duty.duty_type,
+						user_id: duty.user_id,
+						ecrew_duty_id: duty.ecrew_duty_id,
+						raw_duty_id: duty.raw_duty_id,
+					};
+				}),
 		);
 
 		// Upsert the updated rawDuty records into the database
-		const { data: upsertedRawDuty, error: upsertedRawDutyError } = await supabase
-			.from("raw_duty")
-			.upsert(rawDutiesWithRawDutyPeriodIDs, {
-				onConflict: "raw_duty_id",
-				ignoreDuplicates: false,
-			})
-			.select();
+		const { data: upsertedRawDuty, error: upsertedRawDutyError } =
+			await supabase
+				.from("raw_duty")
+				.upsert(rawDutiesWithRawDutyPeriodIDs, {
+					onConflict: "raw_duty_id",
+					ignoreDuplicates: false,
+				})
+				.select();
 
 		if (upsertedRawDutyError) {
 			console.error("Error upserting raw_duty:", upsertedRawDutyError);
@@ -276,7 +278,7 @@ export async function importRoster(
 				raw_duty_ids: rawDutyIDs,
 				raw_duty_period_ids: rawDutyPeriodIDs,
 			})
-			.eq("roster_id", rosterId) 
+			.eq("roster_id", rosterId)
 			.select();
 
 		if (roster3Error) {
@@ -315,7 +317,7 @@ export async function importRoster(
 
 		console.log("Current duties:", current_duty1);
 
-		// 2. Begin matching of incoming duties to those that already exist and understand the 
+		// 2. Begin matching of incoming duties to those that already exist and understand the
 		// type of update
 		const dutiesToUpsert = [];
 		const dutiesToInsert = [];
@@ -422,7 +424,7 @@ export async function importRoster(
 					dutiesToInsert.push({
 						...dutyFieldsWithoutEcrewDutyIdAndDutyId,
 						is_current: true,
-						roster_ids: [rosterId], 
+						roster_ids: [rosterId],
 						raw_duty_ids: [rawDuty.raw_duty_id],
 					});
 
@@ -431,7 +433,7 @@ export async function importRoster(
 					for (const field of changedFields) {
 						changeLogToInsert.push({
 							duty_date: rawDuty.date,
-							roster_id: rosterId, 
+							roster_id: rosterId,
 							user_id: userID,
 							raw_duty_id: rawDuty.raw_duty_id,
 							raw_duty_period_id: rawDuty.raw_duty_period_id,
@@ -439,7 +441,8 @@ export async function importRoster(
 							// We don't yet know the to_duty_id
 							from_duty_period_id: correspondingCurrentDuty.duty_period_id,
 							// We also don't know the to_duty_period_id
-							change_code: "Update" as Database["public"]["Enums"]["change_codes"],
+							change_code:
+								"Update" as Database["public"]["Enums"]["change_codes"],
 							data_item: field,
 							// @ts-ignore
 							from_value: currentDutyForComparison[field],
@@ -498,7 +501,7 @@ export async function importRoster(
 				dutiesToInsert.push({
 					...dutyFieldsWithoutEcrewDutyIdAndDutyId,
 					is_current: true,
-					roster_ids: [rosterId], 
+					roster_ids: [rosterId],
 					raw_duty_ids: [rawDuty.raw_duty_id],
 				});
 
@@ -512,6 +515,8 @@ export async function importRoster(
 				});
 			}
 		}
+
+		const oldDutyIds = [];
 
 		// 3. Update remaining current duties to not be current
 		for (const currentDuty of current_duty1) {
@@ -545,6 +550,8 @@ export async function importRoster(
 					//is_duty_period: false,
 				});
 
+				// write old duty ids ready to populate the roster
+				oldDutyIds.push(currentDuty.duty_id);
 
 				// Create a change log record
 				changeLogToInsert.push({
@@ -603,17 +610,10 @@ export async function importRoster(
 			throw currentDuty2Error;
 		}
 
-
 		// Update and write roster to the database
-		// write all duty ids and old duty ids into array ready to populate the roster
+		// write all duty ids ready to populate the roster
 		const dutyIds = currentDuty2.map((duty) => duty.duty_id);
-		//HM
-		const oldDutyIds: number[] = dutyMatchesToInsert
-			// Only include entries where old_duty_id is not null
-			.filter((dutyMatch) => dutyMatch.old_duty_id !== null)
-			.map((dutyMatch) => dutyMatch.old_duty_id as number);
 
-		//HM we need to update the roster
 		// Update the roster record with duty_ids and old_duty_ids (calculated earlier)
 		const { data: roster4, error: roster4Error } = await supabase
 			.from("roster")
@@ -626,19 +626,11 @@ export async function importRoster(
 			.select();
 
 		if (roster4Error) {
-			console.error(
-				"Error updating duty_ids and old_duty_ids:",
-				roster4Error,
-			);
+			console.error("Error updating duty_ids and old_duty_ids:", roster4Error);
 			throw roster4Error;
 		}
 
-		console.log(
-			"Roster updated with duty_ids and old_duty_ids:",
-			roster4,
-		);
-
-
+		console.log("Roster updated with duty_ids and old_duty_ids:", roster4);
 
 		// 6. Add duty IDs to duty matches where it is missing
 		dutyMatchesToInsert = dutyMatchesToInsert.map((dutyMatch) => {
@@ -648,7 +640,7 @@ export async function importRoster(
 				)?.duty_id;
 				return {
 					...dutyMatch,
-					duty_id: dutyId
+					duty_id: dutyId,
 				};
 			}
 			return dutyMatch;
@@ -687,22 +679,11 @@ export async function importRoster(
 				)?.duty_id;
 				return {
 					...changeLog,
-					to_duty_id: dutyId
+					to_duty_id: dutyId,
 				};
 			}
 			return changeLog;
 		});
-
-		// 9. Get all raw duties for this roster from the database
-		//HM i dont understand why we are doing this? we use rawDuty2 in the subsequent part and 
-		// raw duty not been processed in any of the duty matching code base above?
-		//if we dont do code below cld be for roster 2&3 nto 3&4
-		const { data: rawDuty3, error: rawDuty3Error } = await supabase
-			.from("raw_duty")
-			.select("*")
-			.eq("roster_id", rosterId); 
-
-
 
 		// 10. Update the raw_duty records with the duty_id, writes to new array rawDutiesWithDutyIds
 		const rawDutiesWithDutyIds = rawDuty2.map((rawDuty) => {
@@ -711,11 +692,12 @@ export async function importRoster(
 			)?.duty_id;
 			return {
 				...rawDuty,
-				duty_id: dutyId
+				duty_id: dutyId,
 			};
 		});
-		
+
 		// 11. Upsert the raw_duty records into the database
+		// NOTE: rawDuty3 has been skipped, we can change this later
 		const { data: rawDuty4, error: rawDuty4Error } = await supabase
 			.from("raw_duty")
 			.upsert(rawDutiesWithDutyIds, {
@@ -723,9 +705,6 @@ export async function importRoster(
 				ignoreDuplicates: false,
 			})
 			.select();
-		//HM constrain to records for this roster only?
-		//.select("*")
-		//.eq("roster_id", roster3[0].roster_id); //rosterId
 
 		if (rawDuty4Error) {
 			console.error("Error upserting raw_duty:", rawDuty4Error);
@@ -734,9 +713,8 @@ export async function importRoster(
 
 		console.log("Upserted raw_duty:", rawDuty4);
 
-
-		// 12. ?HM Update raw_duty_period with dutyIds
-		//Loop through rawDutyPeriodData and add the corresponding duty_ids matched by ecrew_duty_id to a new array
+		// 12. Update raw_duty_period with dutyIds
+		// Loop through rawDutyPeriodData and add the corresponding duty_ids matched by ecrew_duty_id to a new array
 		const rawDutyPeriodDataWithDutyIds = [];
 		for (const rawDutyPeriod of rawDutyPeriodData) {
 			const dutyIdsForPeriod = rawDuty4
@@ -745,42 +723,37 @@ export async function importRoster(
 			rawDutyPeriodDataWithDutyIds.push({
 				...rawDutyPeriod,
 				duty_ids: dutyIdsForPeriod,
+				// TODO: This won't work for sector count as it could include standbys
 				sectors: dutyIdsForPeriod.length, //hm new test
 			});
 		}
 
-		//13. HM Upsert the raw_duty_period records that now have duty_ids into the database
-		const { data: rawDutyPeriodWithDutyIds, error: rawDutyPeriodUpdateError } = await supabase
-			.from("raw_duty_period")
-			.upsert(rawDutyPeriodDataWithDutyIds, { //why cant i do this?
-				onConflict: "raw_duty_period_id",
-				ignoreDuplicates: false,
-			})
-			.select();
-				//HM constrain to records for this roster only?
-		//.select("*")
-		//.eq("roster_id", roster3[0].roster_id); //rosterId
+		// 13. Upsert the raw_duty_period records that now have duty_ids into the database
+		const { data: rawDutyPeriodWithDutyIds, error: rawDutyPeriodUpdateError } =
+			await supabase
+				.from("raw_duty_period")
+				.upsert(rawDutyPeriodDataWithDutyIds, {
+					//why cant i do this?
+					onConflict: "raw_duty_period_id",
+					ignoreDuplicates: false,
+				})
+				.select();
 
 		if (rawDutyPeriodUpdateError) {
-			console.error("Error upserting raw_duty_period:", rawDutyPeriodUpdateError);
+			console.error(
+				"Error upserting raw_duty_period:",
+				rawDutyPeriodUpdateError,
+			);
 			throw rawDutyPeriodUpdateError;
 		}
 
 		console.log("Upserted raw_duty_period records:", rawDutyPeriodWithDutyIds);
 
-		
-
-
-		// 	---------------------------------------------------------	
+		// 	---------------------------------------------------------
 
 		// 14. Insert the duty matches into the database
-		const { data: currentDutyMatch2, error: currentDutyMatch2Error } = await supabase
-			.from("duty_match")
-			.insert(dutyMatchesToInsert)
-			.select();
-		//HM constrain to records for this roster only?
-		//.select("*")
-		//.eq("roster_id", roster3[0].roster_id); //rosterId
+		const { data: currentDutyMatch2, error: currentDutyMatch2Error } =
+			await supabase.from("duty_match").insert(dutyMatchesToInsert).select();
 
 		if (currentDutyMatch2Error) {
 			console.error("Error inserting duty matches:", currentDutyMatch2Error);
@@ -794,9 +767,6 @@ export async function importRoster(
 			.from("change_log")
 			.insert(completedChangeLogToInsert)
 			.select();
-		//HM constrain to records for this roster only?
-		//.select("*")
-		//.eq("roster_id", rosterId); 
 
 		if (changeLog2Error) {
 			console.error("Error inserting change log:", changeLog2Error);
@@ -805,20 +775,19 @@ export async function importRoster(
 
 		console.log("Inserted change log:", changeLog2);
 
-
-
 		// ------------------------------------------------------------------------------------------------
 		// DUTY MATCHING FINISHED, BEGIN DUTY PERIOD MATCHING
 		// ------------------------------------------------------------------------------------------------
-		// 1. Find current duty periods (pre roster load  update) and bring back from the database to use in the 
+		// 1. Find current duty periods (pre roster load  update) and bring back from the database to use in the
 		// matching process
-		const { data: current_duty_period1, error: current_duty_period1Error } = await supabase
-			.from("duty_period")
-			.select("*")
-			.eq("user_id", userID)
-			.eq("is_current", true)
-			.gte("date", formattedStartDate)
-			.lte("date", formattedEndDate);
+		const { data: current_duty_period1, error: current_duty_period1Error } =
+			await supabase
+				.from("duty_period")
+				.select("*")
+				.eq("user_id", userID)
+				.eq("is_current", true)
+				.gte("date", formattedStartDate)
+				.lte("date", formattedEndDate);
 
 		if (current_duty_period1Error) {
 			console.error(
@@ -830,7 +799,7 @@ export async function importRoster(
 
 		console.log("Current duty periods:", current_duty_period1);
 
-		//2. Begin matching of the raw duty periods that have been created from the 
+		//2. Begin matching of the raw duty periods that have been created from the
 		// incoming raw duties to the duty periods that are already current in the database
 		// and identify and apply the correct type of update
 		const dutyPeriodsToUpsert = [];
@@ -838,14 +807,12 @@ export async function importRoster(
 		let dpDutyMatchesToInsert = [];
 		const dpChangeLogToInsert = [];
 
-
 		// 2.1 Find corresponding current_duty_period to incoming raw_duty_period
 		// Loop through "raw duty period"
 		for (const rawDutyPeriod of rawDutyPeriodWithRawIds) {
 			// Find the corresponding current_duty_period
 			const correspondingCurrentDutyPeriod = current_duty_period1.find(
-				(dutyPeriod) =>
-					dutyPeriod.date === rawDutyPeriodWithRawIds.date,
+				(dutyPeriod) => dutyPeriod.date === rawDutyPeriod.date,
 			);
 			if (correspondingCurrentDutyPeriod) {
 				console.log(
@@ -860,7 +827,7 @@ export async function importRoster(
 					end_time: correspondingCurrentDutyPeriod.end_time,
 					debrief_time: correspondingCurrentDutyPeriod.debrief_time,
 					sectors: correspondingCurrentDutyPeriod.sectors,
-					includes_flight: correspondingCurrentDutyPeriod.includes_flight,
+					includes_flights: correspondingCurrentDutyPeriod.includes_flights,
 					includes_standby: correspondingCurrentDutyPeriod.includes_standby,
 				};
 
@@ -870,11 +837,13 @@ export async function importRoster(
 					end_time: rawDutyPeriod.end_time,
 					debrief_time: rawDutyPeriod.debrief_time,
 					sectors: rawDutyPeriod.sectors, //sectors needs to be calculated
-					includes_flight: rawDutyPeriod.includes_flight,
+					includes_flights: rawDutyPeriod.includes_flights,
 					includes_standby: rawDutyPeriod.includes_standby,
 				};
 
-				if (!isEqual(currentDutyPeriodForComparison, rawDutyPeriodForComparison)) {
+				if (
+					!isEqual(currentDutyPeriodForComparison, rawDutyPeriodForComparison)
+				) {
 					console.log("Duty Period has changed:");
 					// 2.2.1 Duty Period fields have changed
 					const changedFieldsDP = getObjectDiff(
@@ -920,195 +889,88 @@ export async function importRoster(
 					// 						raw_duty_ids: [rawDuty.raw_duty_id],
 					//                      raw_duty_period_ids:
 					//                      duty_ids:
-		
-
-
 
 					// 					});
 
-										// 2.2.1.4
-										// Create a change log record for each changed data item and their values
-										for (const field of changedFieldsDP) {
-											dpChangeLogToInsert.push({
-												duty_date: rawDutyPeriod.date,
-												roster_id: rosterId,
-												user_id: userID,
-												raw_duty_period_id: rawDutyPeriod.raw_duty_period_id,
-												from_duty_period_id: correspondingCurrentDutyPeriod.duty_period_id,
-												// We don't yet know the to_duty_period_id
-												change_code: "Update" as Database["public"]["Enums"]["change_codes"],
-												data_item: field,
-												// @ts-ignore
-												from_value: currentDutyPeriodForComparison[field],
-												// @ts-ignore
-												to_value: rawDutyPeriodForComparison[field],
-												// TODO: This will be the date the change needed to be picked up
-												effective_change_date: new Date().toISOString(),
-											});
-					// 					}
-					// 				} else { // here a new section duty period has not changed but have any of 
-					// the dutys of whihc it is a parent changed (on fields that do not directly impact the duty period)
-					// this can be idenitified by comparing the duty_ids
-					// 					console.log("Duty has not changed:");
-					// 					// 2.2.1
-					// 					// The duty has not changed, so we need to update the roster_ids and raw_duty_ids
-					// 					dutiesToUpsert.push({
-					// 						...correspondingCurrentDuty,
-					// 						roster_ids: [
-					// 							...(correspondingCurrentDuty.roster_ids || []),
-					// 							rawDuty.roster_id,
-					// 						],
-					// 						raw_duty_ids: [
-					// 							...(correspondingCurrentDuty.raw_duty_ids || []),
-					// 							rawDuty.raw_duty_id,
-					// 						],
-					// 						updated_at: new Date().toISOString(),
-					// 					});
-
-					// 					dutyMatchesToInsert.push({
-					// 						roster_id: rawDuty.roster_id,
-					// 						duty_id: correspondingCurrentDuty.duty_id,
-					// 						raw_duty_id: rawDuty.raw_duty_id,
-					// 						is_found: true,
-					// 						no_of_changes: 0,
-					// 						match_type: "Match" as Database["public"]["Enums"]["match_types"],
-					// 						date: rawDuty.date,
-					// 					});
-					// 				}
-					// 			} else {
-					// 				console.log(
-					// 					"No corresponding current duty found for raw duty:",
-					// 					rawDuty,
-					// 				);
-					// 				// 2.3
-					// 				// These will be new duty records
-
-					// 				/
-					// 				const {
-					// 					ecrew_duty_id,
-					// 					duty_id,
-					// 					raw_duty_period_id,
-					// 					raw_duty_id,
-					// 					roster_id,
-					// 					...dutyFieldsWithoutEcrewDutyIdAndDutyId
-					// 				} = rawDuty;
-
-					// 				dutiesToInsert.push({
-					// 					...dutyFieldsWithoutEcrewDutyIdAndDutyId,
-					// 					is_current: true,
-					// 					roster_ids: [rawDuty.roster_id],
-					// 					raw_duty_ids: [rawDuty.raw_duty_id],
-					// 				});
-
-					// 				dutyMatchesToInsert.push({
-					// 					roster_id: rawDuty.roster_id,
-					// 					raw_duty_id: rawDuty.raw_duty_id,
-					// 					is_found: false,
-					// 					match_type: "New" as Database["public"]["Enums"]["match_types"],
-					// 					date: rawDuty.date,
-					// 				});
-					// 			}
-					// 		}
-
-					// 3. Update remaining current duty periods to not be current
-					for (const currentDutyPeriod of current_duty_period1) { // chk current_duty_period1
-						// Find the corresponding raw duty period
-						const correspondingRawDutyPeriod = rawDutyPeriod.find(
-							(dutyPeriod) =>
-								dutyPeriod.date === currentDutyPeriod.date,
-						);
-
-						// If there is no corresponding raw duty period, then the current duty period is no longer valid
-						if (!correspondingRawDutyPeriod) {
-							dutyPeriodsToUpsert.push({
-								...currentDutyPeriod,
-								is_current: false,
-								current_to: new Date().toISOString(),
-								updated_at: new Date().toISOString(),
-							});
-
-							dpDutyMatchesToInsert.push({
-								// Roster ID at which point the duty was removed
-								roster_id: roster3[0].roster_id, //rosterId
-								old_duty_period_id: currentDutyPeriod.duty_period_id,
-								raw_duty_period_id: null,
-								// Whether a raw record was matched to a current record
-								is_found: false,
-								match_type: "Delete" as Database["public"]["Enums"]["match_types"],
-								date: currentDutyPeriod.date,
-							});
-
-
-							// Create a change log record
-							dpChangeLogToInsert.push({
-								duty_date: currentDutyPeriod.date, 
-								roster_id: roster3[0].roster_id, //rosterId
-								user_id: userID,
-								raw_duty_id: null,
-								raw_duty_period_id: null,
-								from_duty_id: null,
-								from_duty_period_id: currentDutyPeriod.duty_period_id,
-								change_code: "Delete" as Database["public"]["Enums"]["change_codes"],
-								data_item: null,
-								from_value: null,
-								to_value: null,
-								// TODO: This will be the date the change needed to be picked up
-								effective_change_date: new Date().toISOString(),
-							});
-						}
-					}
-
-					// 4. Write everything to the database
-					// Upsert these new duties into the database
-					const { error: upsertedCurrentDutiesError } = await supabase
-						.from("duty")
-						.upsert(dutiesToUpsert, {
-							onConflict: "duty_id",
-							ignoreDuplicates: false,
+					// 2.2.1.4
+					// Create a change log record for each changed data item and their values
+					for (const field of changedFieldsDP) {
+						dpChangeLogToInsert.push({
+							duty_date: rawDutyPeriod.date,
+							roster_id: rosterId,
+							user_id: userID,
+							raw_duty_period_id: rawDutyPeriod.raw_duty_period_id,
+							from_duty_period_id:
+								correspondingCurrentDutyPeriod.duty_period_id,
+							// We don't yet know the to_duty_period_id
+							change_code:
+								"Update" as Database["public"]["Enums"]["change_codes"],
+							data_item: field,
+							// @ts-ignore
+							from_value: currentDutyPeriodForComparison[field],
+							// @ts-ignore
+							to_value: rawDutyPeriodForComparison[field],
+							// TODO: This will be the date the change needed to be picked up
+							effective_change_date: new Date().toISOString(),
 						});
-
-					if (upsertedCurrentDutiesError) {
-						console.error("Error upserting duties:", upsertedCurrentDutiesError);
-						throw upsertedCurrentDutiesError;
 					}
-
-					// Insert the duties into the database
-					const { error: insertedCurrentDutiesError } = await supabase
-						.from("duty")
-						.insert(dutiesToInsert);
-
-					if (insertedCurrentDutiesError) {
-						console.error("Error inserting duties:", insertedCurrentDutiesError);
-						throw insertedCurrentDutiesError;
-					}
-
-					// Get all those duties again
-					const { data: currentDuty2, error: currentDuty2Error } = await supabase
-						.from("duty")
-						.select("*")
-						.eq("user_id", userID)
-						.eq("is_current", true)
-						.gte("date", formattedStartDate)
-						.lte("date", formattedEndDate);
-
-					if (currentDuty2Error) {
-						console.error("Error getting duties:", currentDuty2Error);
-						throw currentDuty2Error;
-					}
-
-
-
-				} catch (error) {
-					console.error("Error importing roster:", error);
-					throw error;
+				} else {
 				}
-
-
-
-
-
-
-
 			}
+		}
 
-			// Summary of Import 
+		// 3. Update remaining current duty periods to not be current
+		for (const currentDutyPeriod of current_duty_period1) {
+			// chk current_duty_period1
+			console.log("Current duty period:", currentDutyPeriod);
+			// Find the corresponding raw duty period
+			// const correspondingRawDutyPeriod = currentDutyPeriod.find(
+			// 	(dutyPeriod) =>
+			// 		dutyPeriod.date === currentDutyPeriod.date,
+			// );
+
+			// If there is no corresponding raw duty period, then the current duty period is no longer valid
+			// if (!correspondingRawDutyPeriod) {
+			// 	dutyPeriodsToUpsert.push({
+			// 		...currentDutyPeriod,
+			// 		is_current: false,
+			// 		current_to: new Date().toISOString(),
+			// 		updated_at: new Date().toISOString(),
+			// 	});
+
+			// 	dpDutyMatchesToInsert.push({
+			// 		// Roster ID at which point the duty was removed
+			// 		roster_id: roster3[0].roster_id, //rosterId
+			// 		old_duty_period_id: currentDutyPeriod.duty_period_id,
+			// 		raw_duty_period_id: null,
+			// 		// Whether a raw record was matched to a current record
+			// 		is_found: false,
+			// 		match_type: "Delete" as Database["public"]["Enums"]["match_types"],
+			// 		date: currentDutyPeriod.date,
+			// 	});
+
+			// 	// Create a change log record
+			// 	dpChangeLogToInsert.push({
+			// 		duty_date: currentDutyPeriod.date,
+			// 		roster_id: roster3[0].roster_id, //rosterId
+			// 		user_id: userID,
+			// 		raw_duty_id: null,
+			// 		raw_duty_period_id: null,
+			// 		from_duty_id: null,
+			// 		from_duty_period_id: currentDutyPeriod.duty_period_id,
+			// 		change_code: "Delete" as Database["public"]["Enums"]["change_codes"],
+			// 		data_item: null,
+			// 		from_value: null,
+			// 		to_value: null,
+			// 		// TODO: This will be the date the change needed to be picked up
+			// 		effective_change_date: new Date().toISOString(),
+			// 	});
+			// }
+		}
+	} catch (error) {
+		console.error("Error importing roster:", error);
+		throw error;
+	}
+}
+
+// Summary of Import
