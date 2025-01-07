@@ -719,7 +719,7 @@ export async function importRoster(
 		for (const rawDutyPeriod of rawDutyPeriodWithRawIds) {
 			const dutyIdsForPeriod = rawDuty4
 				.filter((duty) => duty.ecrew_duty_id === rawDutyPeriod.ecrew_duty_id)
-				.map((duty) => duty.raw_duty_id);
+				.map((duty) => duty.duty_id);
 			rawDutyPeriodDataWithDutyIds.push({
 				...rawDutyPeriod,
 				duty_ids: dutyIdsForPeriod,
