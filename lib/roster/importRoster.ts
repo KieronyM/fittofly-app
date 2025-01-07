@@ -887,7 +887,6 @@ export async function importRoster(
 						user_id: userID,
 						is_current: true,
 						roster_ids: [rosterId],
-						raw_duty_ids: rawDutyPeriod.raw_duty_ids,
 						raw_duty_period_ids: [rawDutyPeriod.raw_duty_period_id],
 						duty_ids: rawDutyPeriod.duty_ids,
 					});
