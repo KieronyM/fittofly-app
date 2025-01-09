@@ -1036,7 +1036,8 @@ export async function importRoster(
 			}
 		}
 
-		// Now add these records to the database
+		// Write everything to the database
+		// 4. Upsert these new duties into the database
 
 		console.log("Duty periods to insert:", dutyPeriodsToInsert);
 
@@ -1062,7 +1063,7 @@ export async function importRoster(
 			throw dutyPeriodsToUpsertError;
 		}
 
-		// 4. Insert the duty matches into the database
+		//  Insert the duty matches into the database
 	} catch (error) {
 		console.error("Error importing roster:", error);
 		throw error;
