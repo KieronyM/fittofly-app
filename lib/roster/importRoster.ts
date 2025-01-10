@@ -722,7 +722,7 @@ export async function importRoster(
 				.map((duty) => duty.duty_id);
 			rawDutyPeriodDataWithDutyIds.push({
 				...rawDutyPeriod,
-				duty_ids: dutyIdsForPeriod,
+				duty_ids: dutyIdsForPeriod.filter((id) => id !== null),
 				// TODO: This won't work for sector count as it could include standbys
 				sectors: dutyIdsForPeriod.length, //hm new test
 			});
@@ -857,8 +857,28 @@ export async function importRoster(
 
 					// 2.2.1.1 Invalidating the current duty period
 					dutyPeriodsToUpsert.push({
-						...correspondingCurrentDutyPeriod,
-						is_current: false,
+						sectors: correspondingCurrentDutyPeriod.sectors ?? 0,
+						report_time: correspondingCurrentDutyPeriod.report_time,
+						start_time: correspondingCurrentDutyPeriod.start_time,
+						end_time: correspondingCurrentDutyPeriod.end_time,
+						debrief_time: correspondingCurrentDutyPeriod.debrief_time,
+						includes_flights: correspondingCurrentDutyPeriod.includes_flights,
+						includes_standby: correspondingCurrentDutyPeriod.includes_standby,
+						date: correspondingCurrentDutyPeriod.date,
+						user_id: userID,
+						is_current: true,
+						raw_duty_period_ids: [
+							...correspondingCurrentDutyPeriod.raw_duty_period_ids,
+							rawDutyPeriod.raw_duty_period_id,
+						],
+						duty_ids: [
+							...(correspondingCurrentDutyPeriod?.duty_ids ?? []),
+							...(rawDutyPeriod?.duty_ids ?? []),
+						],
+						roster_ids: [
+							...correspondingCurrentDutyPeriod.roster_ids,
+							rosterId,
+						],
 						current_to: new Date().toISOString(),
 						updated_at: new Date().toISOString(),
 					});
@@ -878,17 +898,19 @@ export async function importRoster(
 
 					dutyPeriodsToInsert.push({
 						// Removing fields from rawDutyPeriod that are not in the duty_period table
-						...Object.fromEntries(
-							Object.entries(rawDutyPeriod).filter(
-								([key]) =>
-									!["duty_period_id", "ecrew_duty_id", "created_at", "updated_at", "roster_id", "raw_duty_ids", "raw_duty_period_id"].includes(key),
-							),
-						),
+						sectors: rawDutyPeriod.sectors ?? 0,
+						report_time: rawDutyPeriod.report_time,
+						start_time: rawDutyPeriod.start_time,
+						end_time: rawDutyPeriod.end_time,
+						debrief_time: rawDutyPeriod.debrief_time,
+						includes_flights: rawDutyPeriod.includes_flights,
+						includes_standby: rawDutyPeriod.includes_standby,
+						date: rawDutyPeriod.date,
 						user_id: userID,
 						is_current: true,
 						roster_ids: [rosterId],
 						raw_duty_period_ids: [rawDutyPeriod.raw_duty_period_id],
-						duty_ids: rawDutyPeriod.duty_ids,
+						duty_ids: rawDutyPeriod?.duty_ids ?? [],
 					});
 
 					// 2.2.1.4
@@ -917,11 +939,24 @@ export async function importRoster(
 					// 2.2.2.2 There has been no change to the duty period OR the duties within it
 					// Upsert the duty period record with additional info
 					dutyPeriodsToUpsert.push({
-						...correspondingCurrentDutyPeriod,
+						sectors: correspondingCurrentDutyPeriod.sectors ?? 0,
+						report_time: correspondingCurrentDutyPeriod.report_time,
+						start_time: correspondingCurrentDutyPeriod.start_time,
+						end_time: correspondingCurrentDutyPeriod.end_time,
+						debrief_time: correspondingCurrentDutyPeriod.debrief_time,
+						includes_flights: correspondingCurrentDutyPeriod.includes_flights,
+						includes_standby: correspondingCurrentDutyPeriod.includes_standby,
+						date: correspondingCurrentDutyPeriod.date,
+						user_id: userID,
+						is_current: true,
 						updated_at: new Date().toISOString(),
 						raw_duty_period_ids: [
 							...correspondingCurrentDutyPeriod.raw_duty_period_ids,
 							rawDutyPeriod.raw_duty_period_id,
+						],
+						duty_ids: [
+							...(correspondingCurrentDutyPeriod?.duty_ids ?? []),
+							...(rawDutyPeriod?.duty_ids ?? []),
 						],
 						roster_ids: [
 							...correspondingCurrentDutyPeriod.roster_ids,
@@ -947,16 +982,19 @@ export async function importRoster(
 				// 2.3.1 Create a new duty period record
 				dutyPeriodsToInsert.push({
 					// Removing fields from rawDutyPeriod that are not in the duty_period table
-					...Object.fromEntries(
-						Object.entries(rawDutyPeriod).filter(
-							([key]) =>
-								!["duty_period_id", "ecrew_duty_id", "created_at", "updated_at", "roster_id", "raw_duty_ids", "raw_duty_period_id"].includes(key),
-						),
-					),
+					sectors: rawDutyPeriod.sectors ?? 0,
+					report_time: rawDutyPeriod.report_time,
+					start_time: rawDutyPeriod.start_time,
+					end_time: rawDutyPeriod.end_time,
+					debrief_time: rawDutyPeriod.debrief_time,
+					includes_flights: rawDutyPeriod.includes_flights,
+					includes_standby: rawDutyPeriod.includes_standby,
+					date: rawDutyPeriod.date,
 					user_id: userID,
-					raw_duty_period_ids: [rawDutyPeriod.raw_duty_period_id],
 					is_current: true,
 					roster_ids: [rosterId],
+					raw_duty_period_ids: [rawDutyPeriod.raw_duty_period_id],
+					duty_ids: rawDutyPeriod?.duty_ids ?? [],
 				});
 
 				// 2.3.2 Create a duty match record for the duty period
@@ -998,7 +1036,18 @@ export async function importRoster(
 			// If there is no corresponding raw duty period, then the current duty period is no longer valid
 			if (!correspondingRawDutyPeriod) {
 				dutyPeriodsToUpsert.push({
-					...currentDutyPeriod,
+					sectors: currentDutyPeriod.sectors ?? 0,
+					report_time: currentDutyPeriod.report_time,
+					start_time: currentDutyPeriod.start_time,
+					end_time: currentDutyPeriod.end_time,
+					debrief_time: currentDutyPeriod.debrief_time,
+					includes_flights: currentDutyPeriod.includes_flights,
+					includes_standby: currentDutyPeriod.includes_standby,
+					date: currentDutyPeriod.date,
+					user_id: userID,
+					raw_duty_period_ids: currentDutyPeriod.raw_duty_period_ids,
+					duty_ids: currentDutyPeriod?.duty_ids,
+					roster_ids: currentDutyPeriod.roster_ids,
 					is_current: false,
 					current_to: new Date().toISOString(),
 					updated_at: new Date().toISOString(),
@@ -1106,9 +1155,6 @@ export async function importRoster(
 		// 10. Upsert raw_duty_period into the database
 		// 11. Add duty match into the database
 		// 12. Add change log into the database
-		
-
-		
 	} catch (error) {
 		console.error("Error importing roster:", error);
 		throw error;
