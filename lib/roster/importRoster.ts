@@ -610,7 +610,7 @@ export async function importRoster(
 			throw currentDuty2Error;
 		}
 
-		// Update and write roster to the database
+		// 5. Update and write roster to the database
 		// write all duty ids ready to populate the roster
 		const dutyIds = currentDuty2.map((duty) => duty.duty_id);
 
@@ -946,7 +946,7 @@ export async function importRoster(
 			else {
 				// 2.3.1 Create a new duty period record
 				dutyPeriodsToInsert.push({
-					// Remocing fields from rawDutyPeriod that are not in the duty_period table
+					// Removing fields from rawDutyPeriod that are not in the duty_period table
 					...Object.fromEntries(
 						Object.entries(rawDutyPeriod).filter(
 							([key]) =>
@@ -1063,7 +1063,52 @@ export async function importRoster(
 			throw dutyPeriodsToUpsertError;
 		}
 
-		//  Insert the duty matches into the database
+		// extract all those duty periods that have just been written to sql again
+		// const { data: currentDutyPeriod2, error: currentDutyPeriod2Error } = await supabase
+		// 	.from("duty_period")
+		// 	.select("*")
+		// 	.eq("user_id", userID)
+		// 	.eq("is_current", true)
+		// 	.gte("date", formattedStartDate)
+		// 	.lte("date", formattedEndDate);
+
+		// if (currentDutyPeriod2Error) {
+		// 	console.error("Error getting duty periods:", currentDutyPeriod2Error);
+		// 	throw currentDutyPeriod2Error;
+		// }
+
+		// // 5. Update and write roster to the database
+		// // write all duty ids ready to populate the roster
+		// const dutyPeriodIds = currentDutyPeriod2.map((dutyPeriod) => dutyPeriod.duty_period_id);
+
+		// // Update the roster record with duty_period_ids and old_duty_period_ids (calculated earlier)
+		// const { data: roster5, error: roster5Error } = await supabase
+		// 	.from("roster")
+		// 	.update({
+		// 		updated_at: new Date().toISOString(),
+		// 		duty_period_ids: dutyPeriodIds,
+		// 		old_duty_period_ids: oldDutyPeriodIds,
+		// 	})
+		// 	.eq("roster_id", rosterId)
+		// 	.select();
+
+		// if (roster5Error) {
+		// 	console.error("Error updating duty_ids and old_duty_ids:", roster5Error);
+		// 	throw roster5Error;
+		// }
+
+		// console.log("Roster updated with duty_period_ids and old_duty_period_ids:", roster5);
+
+		// 6. Add duty period ids to duty matches where it is missing
+		// 7. Add 'New' duty period changed records to the change log
+		// 8. Add the duty period id to all 'Updated' duty periods(s) in the change log
+		// 9. Update raw duty period with duty_period_id
+		// 10. Upsert raw_duty_period into the database
+		// 11. Add duty match into the database
+		// 12. Add change log into the database
+		
+
+		
 	} catch (error) {
 		console.error("Error importing roster:", error);
 		throw error;
