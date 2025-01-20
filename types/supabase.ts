@@ -355,37 +355,40 @@ export type Database = {
           created_at: string
           date: string
           duty_code: string
-          duty_desc: string
+          duty_description: string
           duty_type: Database["public"]["Enums"]["duty_type"]
           ecrew_duty_id: string
           end_time: string
           hotel_id: number
           roster_id: number
           start_time: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           date: string
           duty_code: string
-          duty_desc: string
+          duty_description: string
           duty_type: Database["public"]["Enums"]["duty_type"]
           ecrew_duty_id: string
           end_time: string
           hotel_id?: number
           roster_id: number
           start_time: string
+          user_id?: string
         }
         Update: {
           created_at?: string
           date?: string
           duty_code?: string
-          duty_desc?: string
+          duty_description?: string
           duty_type?: Database["public"]["Enums"]["duty_type"]
           ecrew_duty_id?: string
           end_time?: string
           hotel_id?: number
           roster_id?: number
           start_time?: string
+          user_id?: string
         }
         Relationships: []
       }

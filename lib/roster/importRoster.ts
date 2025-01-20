@@ -130,30 +130,10 @@ export async function importRoster(
 						});
 					}
 				} else {
-					//if (eCrewDutyDetails.type !== "Hotel") {    //HM can change this to an if else
-					rawDutyData.push({
-						roster_id: rosterId,
-						user_id: userID,
-						ecrew_duty_id: eCrewDutyDetails.id,
-						date: eCrewDutyDetails.start_date,
-						duty_type: eCrewDutyDetails.type,
-						// TODO: These need some text manipulation to to be extracted out
-						duty_code: eCrewDutyDetails.text,
-						duty_description: eCrewDutyDetails.text,
-						// TODO: Check these times are correct for all duty_types
-						report_time: null,
-						start_time: eCrewDutyDetails.start,
-						end_time: eCrewDutyDetails.end,
-						debrief_time: null,
-						// TODO: Check this data is valid
-						is_all_day: false,
-						is_positioning: false,
-					});
-					//}
 					if (eCrewDutyDetails.type === "Hotel") {
 						hotelDutyData.push({
 							roster_id: rosterId,
-							// HM needs to be added back in sql table needs attention! user_id: userID,
+							user_id: userID,
 							ecrew_duty_id: eCrewDutyDetails.id,
 							date: eCrewDutyDetails.start_date,
 							duty_type: eCrewDutyDetails.type,
@@ -167,6 +147,25 @@ export async function importRoster(
 							date: eCrewDutyDetails.start_date,
 						});
 						console.log("Raw duty dataHotel:", hotelDutyData, hotelDutyDates);
+					} else {
+						rawDutyData.push({
+							roster_id: rosterId,
+							user_id: userID,
+							ecrew_duty_id: eCrewDutyDetails.id,
+							date: eCrewDutyDetails.start_date,
+							duty_type: eCrewDutyDetails.type,
+							// TODO: These need some text manipulation to to be extracted out
+							duty_code: eCrewDutyDetails.text,
+							duty_description: eCrewDutyDetails.text,
+							// TODO: Check these times are correct for all duty_types
+							report_time: null,
+							start_time: eCrewDutyDetails.start,
+							end_time: eCrewDutyDetails.end,
+							debrief_time: null,
+							// TODO: Check this data is valid
+							is_all_day: false,
+							is_positioning: false,
+						});
 					}
 
 					// 4. Create a raw duty period record
@@ -224,16 +223,16 @@ export async function importRoster(
 			}
 
 			// 7b. Insert hotel_duty records into database
-			// const { data: hotelDuty, error: hotelDutyDataError } =
-			// 	await supabase
-			// 		.from("hotel_duty")
-			// 		.insert(hotelDutyData)  \\HM i dont umderstand why it doesnt like theis?
-			// 		.select();
+			const { data: hotelDuty, error: hotelDutyDataError } =
+				await supabase
+					.from("hotel_duty")
+					.insert(hotelDutyData)
+					.select();
 
-			// if (hotelDutyDataError) {
-			// 	console.error("Error inserting hotel_duty:", hotelDutyDataError);
-			// 	throw hotelDutyDataError;
-			// }
+			if (hotelDutyDataError) {
+				console.error("Error inserting hotel_duty:", hotelDutyDataError);
+				throw hotelDutyDataError;
+			}
 
 			// 8. Insert raw_duty_period records into database
 			const { data: rawDutyPeriodWithRawIds, error: rawDutyPeriodError } =
