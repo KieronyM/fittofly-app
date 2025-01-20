@@ -246,6 +246,7 @@ export type Database = {
           end_time: string
           flight_duty_period_hhmm: string | null
           includes_flights: boolean
+          includes_hotel: boolean
           includes_standby: boolean
           is_current: boolean
           max_fdp: string | null
@@ -273,6 +274,7 @@ export type Database = {
           end_time: string
           flight_duty_period_hhmm?: string | null
           includes_flights: boolean
+          includes_hotel?: boolean
           includes_standby: boolean
           is_current: boolean
           max_fdp?: string | null
@@ -300,6 +302,7 @@ export type Database = {
           end_time?: string
           flight_duty_period_hhmm?: string | null
           includes_flights?: boolean
+          includes_hotel?: boolean
           includes_standby?: boolean
           is_current?: boolean
           max_fdp?: string | null
@@ -344,6 +347,45 @@ export type Database = {
           period_start_time?: string
           sector_count?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      hotel_duty: {
+        Row: {
+          created_at: string
+          date: string
+          duty_code: string
+          duty_desc: string
+          duty_type: Database["public"]["Enums"]["duty_type"]
+          ecrew_duty_id: string
+          end_time: string
+          hotel_id: number
+          roster_id: number
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          duty_code: string
+          duty_desc: string
+          duty_type: Database["public"]["Enums"]["duty_type"]
+          ecrew_duty_id: string
+          end_time: string
+          hotel_id?: number
+          roster_id: number
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          duty_code?: string
+          duty_desc?: string
+          duty_type?: Database["public"]["Enums"]["duty_type"]
+          ecrew_duty_id?: string
+          end_time?: string
+          hotel_id?: number
+          roster_id?: number
+          start_time?: string
         }
         Relationships: []
       }
@@ -468,6 +510,7 @@ export type Database = {
           ecrew_duty_id: string
           end_time: string
           includes_flights: boolean
+          includes_hotel: boolean
           includes_standby: boolean
           raw_duty_ids: number[]
           raw_duty_period_id: number
@@ -487,6 +530,7 @@ export type Database = {
           ecrew_duty_id: string
           end_time: string
           includes_flights: boolean
+          includes_hotel?: boolean
           includes_standby: boolean
           raw_duty_ids: number[]
           raw_duty_period_id?: number
@@ -506,6 +550,7 @@ export type Database = {
           ecrew_duty_id?: string
           end_time?: string
           includes_flights?: boolean
+          includes_hotel?: boolean
           includes_standby?: boolean
           raw_duty_ids?: number[]
           raw_duty_period_id?: number
