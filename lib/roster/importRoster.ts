@@ -226,15 +226,16 @@ export async function importRoster(
 			}
 
 			// 7b. Insert hotel_duty records into database
-			const { data: hotelDuty, error: hotelDutyDataError } =
-				await supabase
+			if (hotelDutyData.length > 0) {
+				const { data: hotelDuty, error: hotelDutyDataError } = await supabase
 					.from("hotel_duty")
 					.insert(hotelDutyData)
 					.select();
 
-			if (hotelDutyDataError) {
-				console.error("Error inserting hotel_duty:", hotelDutyDataError);
-				throw hotelDutyDataError;
+				if (hotelDutyDataError) {
+					console.error("Error inserting hotel_duty:", hotelDutyDataError);
+					throw hotelDutyDataError;
+				}
 			}
 
 			// 8. Insert raw_duty_period records into database
