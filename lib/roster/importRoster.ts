@@ -183,8 +183,11 @@ export async function importRoster(
 						// TODO: This needs to filter the flights for the duty to see if one is a standby
 						includes_standby:
 							eCrewDutyDetails.type === "Standby" ? true : false,
-						//includes_hotel: eCrewDutyDetails.type === "Hotel" ? true : false, //HM added
-						// if hotelDutyDates includes raw duty date indicate includes hotel true
+						includes_hotel: hotelDutyDates.some(
+							(date) => date.date === eCrewDutyDetails.start_date,
+						)
+							? true
+							: false,
 					});
 				}
 			}
