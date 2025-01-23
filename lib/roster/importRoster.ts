@@ -203,16 +203,16 @@ console.log("Raw duty Standby:", standbyDutyDates);
 							user_id: userID,
 							ecrew_duty_id: eCrewDutyDetails.id,
 							date: eCrewDutyDetails.start_date,
-							report_time: null,
+							report_time: null, //KM work required
 							start_time: eCrewDutyDetails.start,
 							end_time: eCrewDutyDetails.end,
-							debrief_time: null,
+							debrief_time: null, //KM work required
 							raw_duty_ids: [],
 				 			//KM we can use standbyDutyDates, FlightDutyDates and hotelDutyDates to update, match on date
-							// includes_standby: if record present for date
-							// includes_flights: if record for date
-							// sectors: if record present = flight count
-							// includes_hotel = if record present
+							 includes_standby: false, //if record present for date
+							 includes_flights: false, //if record for date
+							 sectors: null, //if record present = flight count
+							 includes_hotel: false, // = if record present
 				 		});
 			} // endof duties loop for condition not all day or hotel 
 		} // endof loop around eCrewDuties for creating raw_duty_period
