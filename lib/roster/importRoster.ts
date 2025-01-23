@@ -53,14 +53,10 @@ export async function importRoster(
 		const rawDutyPeriodData = [];
 		const hotelDutyData = [];
 		const hotelDutyDates = [];
-		// hotelDutyDates is an array of dates where a hotel stay is present. Appendeng a date to this array enables a quick
-		// scan to to see if a duty period includes a hotel stay and removes the need to loop around the hotelDutyData obj
-		// when creating the raw_duty_period
-		interface dutyPeriodIncludes {
-			date: string;
-			includes: "flights" | "standby" | "hotel";
-		};
-		//const dpincludes: dutyPeriodIncludes[];
+		const flightDutyCounts = [];
+		const standbyDutyDates = [];
+		let iFlightCount = 0;
+
 
 		// Loop through eCrewDutiesDetails ready to insert into raw_duty
 		for (const eCrewDutyDetails of eCrewDutiesDetails) {
@@ -89,6 +85,17 @@ export async function importRoster(
 			}
 			// For duties that are not all day, create a raw duty period and raw duty record(s)
 			else {
+// if the duty is a standby write date out ready to update raw duty period later
+if (eCrewDutyDetails.type === "Standby"){
+standbyDutyDates.push({
+	dpDate: eCrewDutyDetails.start_date.slice (0,10) //KM to do date better
+});
+
+console.log("Raw duty Standby:", standbyDutyDates);
+}
+
+
+
 				// Create the raw duty record(s)
 				if (eCrewDutyDetails.type === "Flight") {
 					// Loop through the flights for the duty
@@ -98,7 +105,9 @@ export async function importRoster(
 					);
 
 					// Loop through the flights and create raw duty records
+					iFlightCount = 0;
 					for (const flight of associatedFlights[0].dutyDetails) {
+						iFlightCount += 1;
 						rawDutyData.push({
 							roster_id: rosterId,
 							user_id: userID,
@@ -133,7 +142,12 @@ export async function importRoster(
 							distance_nm: parseFloat(flight.Distance.replace(" Nm", "")),
 							is_positioning: flight.IsDeadhead,
 						});
-					}
+					} // end of creating raw_duty(s) of type flight
+				//write summary flight info 
+				flightDutyCounts.push({
+					dpDate: eCrewDutyDetails.start_date.slice (0,10), flightCount: iFlightCount //KM to do date better
+				});
+				console.log("Flight Counts:", flightDutyCounts);
 				}
 				else {
 					if (eCrewDutyDetails.type === "Hotel") {
@@ -150,12 +164,8 @@ export async function importRoster(
 							end_time: eCrewDutyDetails.end,
 						});
 						hotelDutyDates.push({
-							date: eCrewDutyDetails.start_date,
+							dpDate: eCrewDutyDetails.start_date.slice (0,10) //KM to do date better
 						});
-
-						//HM instead of writing to hotelDutyDates do this
-						//const newHotelDate: dutyPeriodIncludes = { date: eCrewDutyDetails.start_date, includes: "hotel" };
-						//dpincludes.push(newHotelDate);
 
 						console.log("Raw duty dataHotel:", hotelDutyData, hotelDutyDates);
 					}
@@ -180,41 +190,35 @@ export async function importRoster(
 						});
 					}
 				}
-
-				// 4. Create a raw duty period record
-				if (eCrewDutyDetails.type != "Hotel") {
-					rawDutyPeriodData.push({
-						roster_id: rosterId,
-						user_id: userID,
-						ecrew_duty_id: eCrewDutyDetails.id,
-						date: eCrewDutyDetails.start_date,
-						report_time: null,
-						start_time: eCrewDutyDetails.start,
-						end_time: eCrewDutyDetails.end,
-						debrief_time: null,
-						raw_duty_ids: [],
-						includes_flights: false,
-						// TODO: This needs to filter the flights for the duty to see if one is a standby
-						includes_standby:
-							eCrewDutyDetails.type === "Standby" ? true : false,
-						//HM cant calc this at this point so can default to false.
-						// would like to comment out but too scared of barcketss!!!!!!
-						includes_hotel: hotelDutyDates.some(
-							(date) => date.date === eCrewDutyDetails.start_date,
-						)
-							? true
-							: false,
-					});
-				}
 			} // endof duties that are not all day 
 		} // endof loop around eCrewDuties
 
 
+		// 4. Create raw_duty_period
+		for (const eCrewDutyDetails of eCrewDutiesDetails) {
+			// For duties that are not all day, create a raw duty period
+			if (!eCrewDutyDetails.all_day && eCrewDutyDetails.type !== "Hotel" ) {
+			rawDutyPeriodData.push({
+							roster_id: rosterId,
+							user_id: userID,
+							ecrew_duty_id: eCrewDutyDetails.id,
+							date: eCrewDutyDetails.start_date,
+							report_time: null,
+							start_time: eCrewDutyDetails.start,
+							end_time: eCrewDutyDetails.end,
+							debrief_time: null,
+							raw_duty_ids: [],
+				 			//KM we can use standbyDutyDates, FlightDutyDates and hotelDutyDates to update, match on date
+							// includes_standby: if record present for date
+							// includes_flights: if record for date
+							// sectors: if record present = flight count
+							// includes_hotel = if record present
+				 		});
+			} // endof duties loop for condition not all day or hotel 
+		} // endof loop around eCrewDuties for creating raw_duty_period
 
-
-		//HM!!!!!!!add a error check here to ensure that raw_duty_periods are unique by day
-		// duty types of 'Hotel' had been causing dupes to occur but are no updated as indicating
-		// includes_hotel true
+	
+		//HM!!!!!!!add a error check here to ensure that raw_duty_periods are unique by day e.g. duty types of 'Hotel' had been causing dupes to occur 
 
 		console.log("Raw duty data:", rawDutyData);
 
@@ -799,7 +803,7 @@ export async function importRoster(
 				...rawDutyPeriod,
 				duty_ids: dutyIdsForPeriod.filter((id) => id !== null),
 				// TODO: This won't work for sector count as it could include standbys
-				sectors: dutyIdsForPeriod.length, //hm new test
+				//sectors: dutyIdsForPeriod.length, //hm new test
 			});
 		}
 
