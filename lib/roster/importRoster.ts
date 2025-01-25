@@ -54,6 +54,7 @@ export async function importRoster(
 		const hotelDutyData = [];
 		const hotelDutyDates = [];
 		const flightDutyCounts = [];
+		const flightDutyDates = [];
 		const standbyDutyDates = [];
 		let iFlightCount = 0;
 
@@ -87,10 +88,9 @@ export async function importRoster(
 			else {
 // if the duty is a standby write date out ready to update raw duty period later
 if (eCrewDutyDetails.type === "Standby"){
-standbyDutyDates.push({
-	dpDate: eCrewDutyDetails.start_date.slice (0,10) //KM to do date better
-});
-
+standbyDutyDates.push(
+	eCrewDutyDetails.start_date.slice(0,10) //KM to do date better
+);
 console.log("Raw duty Standby:", standbyDutyDates);
 }
 
@@ -142,12 +142,15 @@ console.log("Raw duty Standby:", standbyDutyDates);
 							distance_nm: parseFloat(flight.Distance.replace(" Nm", "")),
 							is_positioning: flight.IsDeadhead,
 						});
+						flightDutyDates.push(
+							eCrewDutyDetails.start_date.slice(0,10) //KM to do date better
+						);
 					} // end of creating raw_duty(s) of type flight
 				//write summary flight info 
 				flightDutyCounts.push({
 					dpDate: eCrewDutyDetails.start_date.slice (0,10), flightCount: iFlightCount //KM to do date better
 				});
-				console.log("Flight Counts:", flightDutyCounts);
+				console.log("Flight Counts:", flightDutyCounts, flightDutyDates);
 				}
 				else {
 					if (eCrewDutyDetails.type === "Hotel") {
@@ -163,9 +166,9 @@ console.log("Raw duty Standby:", standbyDutyDates);
 							start_time: eCrewDutyDetails.start,
 							end_time: eCrewDutyDetails.end,
 						});
-						hotelDutyDates.push({
-							dpDate: eCrewDutyDetails.start_date.slice (0,10) //KM to do date better
-						});
+						hotelDutyDates.push(
+							eCrewDutyDetails.start_date.slice(0,10) //KM to do date better
+						);
 
 						console.log("Raw duty dataHotel:", hotelDutyData, hotelDutyDates);
 					}
@@ -198,7 +201,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 		for (const eCrewDutyDetails of eCrewDutiesDetails) {
 			// For duties that are not all day, create a raw duty period
 			if (!eCrewDutyDetails.all_day && eCrewDutyDetails.type !== "Hotel" ) {
-			rawDutyPeriodData.push({
+				rawDutyPeriodData.push({
 							roster_id: rosterId,
 							user_id: userID,
 							ecrew_duty_id: eCrewDutyDetails.id,
@@ -209,10 +212,10 @@ console.log("Raw duty Standby:", standbyDutyDates);
 							debrief_time: null, //KM work required
 							raw_duty_ids: [],
 				 			//KM we can use standbyDutyDates, FlightDutyDates and hotelDutyDates to update, match on date
-							 includes_standby: false, //if record present for date
-							 includes_flights: false, //if record for date
-							 sectors: null, //if record present = flight count
-							 includes_hotel: false, // = if record present
+							 includes_standby: standbyDutyDates.includes(eCrewDutyDetails.start_date.slice(0,10)),
+							 includes_flights: flightDutyDates.includes(eCrewDutyDetails.start_date.slice(0,10)),
+							 sectors: flightDutyDates.filter((name) => name === (eCrewDutyDetails.start_date.slice(0,10))).length,
+							 includes_hotel: hotelDutyDates.includes(eCrewDutyDetails.start_date.slice(0,10)),	 
 				 		});
 			} // endof duties loop for condition not all day or hotel 
 		} // endof loop around eCrewDuties for creating raw_duty_period
