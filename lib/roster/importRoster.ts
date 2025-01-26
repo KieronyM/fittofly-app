@@ -56,7 +56,6 @@ export async function importRoster(
 		const flightDutyCounts = [];
 		const flightDutyDates = [];
 		const standbyDutyDates = [];
-		let iFlightCount = 0;
 
 
 		// Loop through eCrewDutiesDetails ready to insert into raw_duty
@@ -105,9 +104,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 					);
 
 					// Loop through the flights and create raw duty records
-					iFlightCount = 0;
 					for (const flight of associatedFlights[0].dutyDetails) {
-						iFlightCount += 1;
 						rawDutyData.push({
 							roster_id: rosterId,
 							user_id: userID,
@@ -146,11 +143,6 @@ console.log("Raw duty Standby:", standbyDutyDates);
 							eCrewDutyDetails.start_date.slice(0,10) //KM to do date better
 						);
 					} // end of creating raw_duty(s) of type flight
-				//write summary flight info 
-				flightDutyCounts.push({
-					dpDate: eCrewDutyDetails.start_date.slice (0,10), flightCount: iFlightCount //KM to do date better
-				});
-				console.log("Flight Counts:", flightDutyCounts, flightDutyDates);
 				}
 				else {
 					if (eCrewDutyDetails.type === "Hotel") {
