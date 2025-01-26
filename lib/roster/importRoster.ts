@@ -53,10 +53,8 @@ export async function importRoster(
 		const rawDutyPeriodData = [];
 		const hotelDutyData = [];
 		const hotelDutyDates = [];
-		const flightDutyCounts = [];
 		const flightDutyDates = [];
 		const standbyDutyDates = [];
-
 
 		// Loop through eCrewDutiesDetails ready to insert into raw_duty
 		for (const eCrewDutyDetails of eCrewDutiesDetails) {
@@ -85,15 +83,13 @@ export async function importRoster(
 			}
 			// For duties that are not all day, create a raw duty period and raw duty record(s)
 			else {
-// if the duty is a standby write date out ready to update raw duty period later
-if (eCrewDutyDetails.type === "Standby"){
-standbyDutyDates.push(
-	eCrewDutyDetails.start_date.slice(0,10) //KM to do date better
-);
-console.log("Raw duty Standby:", standbyDutyDates);
-}
-
-
+				// if the duty is a standby write date out ready to update raw duty period later
+				if (eCrewDutyDetails.type === "Standby") {
+					standbyDutyDates.push(
+						eCrewDutyDetails.start_date.slice(0, 10) //KM to do date better
+					);
+					console.log("Raw duty Standby:", standbyDutyDates);
+				}
 
 				// Create the raw duty record(s)
 				if (eCrewDutyDetails.type === "Flight") {
@@ -140,7 +136,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 							is_positioning: flight.IsDeadhead,
 						});
 						flightDutyDates.push(
-							eCrewDutyDetails.start_date.slice(0,10) //KM to do date better
+							eCrewDutyDetails.start_date.slice(0, 10) //KM to do date better
 						);
 					} // end of creating raw_duty(s) of type flight
 				}
@@ -159,7 +155,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 							end_time: eCrewDutyDetails.end,
 						});
 						hotelDutyDates.push(
-							eCrewDutyDetails.start_date.slice(0,10) //KM to do date better
+							eCrewDutyDetails.start_date.slice(0, 10) //KM to do date better
 						);
 
 						console.log("Raw duty dataHotel:", hotelDutyData, hotelDutyDates);
@@ -192,27 +188,27 @@ console.log("Raw duty Standby:", standbyDutyDates);
 		// 4. Create raw_duty_period
 		for (const eCrewDutyDetails of eCrewDutiesDetails) {
 			// For duties that are not all day, create a raw duty period
-			if (!eCrewDutyDetails.all_day && eCrewDutyDetails.type !== "Hotel" ) {
+			if (!eCrewDutyDetails.all_day && eCrewDutyDetails.type !== "Hotel") {
 				rawDutyPeriodData.push({
-							roster_id: rosterId,
-							user_id: userID,
-							ecrew_duty_id: eCrewDutyDetails.id,
-							date: eCrewDutyDetails.start_date,
-							report_time: null, //KM work required
-							start_time: eCrewDutyDetails.start,
-							end_time: eCrewDutyDetails.end,
-							debrief_time: null, //KM work required
-							raw_duty_ids: [],
-				 			//KM we can use standbyDutyDates, FlightDutyDates and hotelDutyDates to update, match on date
-							 includes_standby: standbyDutyDates.includes(eCrewDutyDetails.start_date.slice(0,10)),
-							 includes_flights: flightDutyDates.includes(eCrewDutyDetails.start_date.slice(0,10)),
-							 sectors: flightDutyDates.filter((name) => name === (eCrewDutyDetails.start_date.slice(0,10))).length,
-							 includes_hotel: hotelDutyDates.includes(eCrewDutyDetails.start_date.slice(0,10)),	 
-				 		});
+					roster_id: rosterId,
+					user_id: userID,
+					ecrew_duty_id: eCrewDutyDetails.id,
+					date: eCrewDutyDetails.start_date,
+					report_time: null, //KM work required
+					start_time: eCrewDutyDetails.start,
+					end_time: eCrewDutyDetails.end,
+					debrief_time: null, //KM work required
+					raw_duty_ids: [],
+					//KM we can use standbyDutyDates, FlightDutyDates and hotelDutyDates to update, match on date
+					includes_standby: standbyDutyDates.includes(eCrewDutyDetails.start_date.slice(0, 10)),
+					includes_flights: flightDutyDates.includes(eCrewDutyDetails.start_date.slice(0, 10)),
+					sectors: flightDutyDates.filter((name) => name === (eCrewDutyDetails.start_date.slice(0, 10))).length,
+					includes_hotel: hotelDutyDates.includes(eCrewDutyDetails.start_date.slice(0, 10)),
+				});
 			} // endof duties loop for condition not all day or hotel 
 		} // endof loop around eCrewDuties for creating raw_duty_period
 
-	
+
 		//HM!!!!!!!add a error check here to ensure that raw_duty_periods are unique by day e.g. duty types of 'Hotel' had been causing dupes to occur 
 
 		console.log("Raw duty data:", rawDutyData);
@@ -244,12 +240,6 @@ console.log("Raw duty Standby:", standbyDutyDates);
 				raw_duty_ids: rawDutyIdsForPeriod,
 			});
 		}
-
-		//7a. see if the duty Period has a hotel stay for the same day
-		//includes_hotel: hotelDutyDates.some(
-		//	(date) => date.date === eCrewDutyDetails.start_date,
-		//)
-
 
 		// 7b. Insert hotel_duty records into database
 		if (hotelDutyData.length > 0) {
@@ -365,12 +355,13 @@ console.log("Raw duty Standby:", standbyDutyDates);
 
 		// ------------------------------------------------------------------------------------------------
 		// IMPORT ROSTER FINISHED, BEGIN DUTY MATCHING
+		// DRAW.IO DUTY_MATCHING
 		// ------------------------------------------------------------------------------------------------
-
+		// At this point, data has been loaded into the database (roster, raw_duty and raw_duty_period).
+		// We now start the matching process
 		// Now find current duties
-		// At this point, data has been loaded into the database, we now start the matching process
 
-		// DRAW.IO DUTY_MATCHING - 1. Import current data for roster period
+		// 1. Import current duty data for roster period
 		const { data: current_duty1, error: current_duty1Error } = await supabase
 			.from("duty")
 			.select("*")
@@ -383,8 +374,8 @@ console.log("Raw duty Standby:", standbyDutyDates);
 			console.error("Error getting current duties:", current_duty1Error);
 			throw current_duty1Error;
 		}
-
 		console.log("Current duties:", current_duty1);
+
 
 		// 2. Begin matching of incoming duties to those that already exist and understand the
 		// type of update
@@ -404,14 +395,12 @@ console.log("Raw duty Standby:", standbyDutyDates);
 					duty.duty_code === rawDuty.duty_code &&
 					duty.flight_number === rawDuty.flight_number,
 			);
-			if (correspondingCurrentDuty) {
-				console.log(
-					"Corresponding current duty found:",
-					correspondingCurrentDuty,
-				);
-				// 2.2
-				// Compare the current duty with the raw duty to see if any of the fields have changed
 
+			if (correspondingCurrentDuty) {
+				//A current duty has been found
+				console.log("Corresponding current duty found:", correspondingCurrentDuty,);
+
+				// 2.2 Compare the current duty with the raw duty to see if any of the fields have changed
 				const currentDutyForComparison = {
 					report_time: correspondingCurrentDuty.report_time,
 					start_time: correspondingCurrentDuty.start_time,
@@ -451,15 +440,16 @@ console.log("Raw duty Standby:", standbyDutyDates);
 				};
 
 				if (!isEqual(currentDutyForComparison, rawDutyForComparison)) {
+					// 2.2.1 the incoming duty has different data item value(s) to the current duty
 					console.log("Duty has changed:");
-					// 2.2.2
+
 					const changedFields = getObjectDiff(
 						currentDutyForComparison,
 						rawDutyForComparison,
 					);
 					console.log("Diff:", changedFields);
 
-					// Invalidating the current duty
+					// Invalidate the current duty
 					dutiesToUpsert.push({
 						...correspondingCurrentDuty,
 						is_current: false,
@@ -477,7 +467,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 						match_type:
 							"Update" as Database["public"]["Enums"]["match_types"],
 						date: rawDuty.date,
-						//is_duty_period: false,
+						is_duty_period: false,
 					});
 
 					// Remove unused properties from rawDuty
@@ -498,7 +488,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 						raw_duty_ids: [rawDuty.raw_duty_id],
 					});
 
-					// 2.2.2.1
+					// 2.2.1.2
 					// Create a change log record for each changed data item and their values
 					for (const field of changedFields) {
 						changeLogToInsert.push({
@@ -523,9 +513,10 @@ console.log("Raw duty Standby:", standbyDutyDates);
 						});
 					}
 				} else {
+					// 2.2.2 The duty has not changed
 					console.log("Duty has not changed:");
-					// 2.2.1
-					// The duty has not changed, so we need to update the roster_ids and raw_duty_ids
+
+					// Update the roster_ids and raw_duty_ids
 					dutiesToUpsert.push({
 						...correspondingCurrentDuty,
 						roster_ids: [
@@ -551,13 +542,10 @@ console.log("Raw duty Standby:", standbyDutyDates);
 					});
 				}
 			} else {
-				console.log(
-					"No corresponding current duty found for raw duty:",
-					rawDuty,
-				);
-				// 2.3
-				// These will be new duty records
-
+				// 2.3 No current duty found
+				console.log("No corresponding current duty found for raw duty:", rawDuty,);
+				
+				// Create new duty
 				// Remove unused properties from rawDuty
 				const {
 					ecrew_duty_id,
@@ -581,14 +569,13 @@ console.log("Raw duty Standby:", standbyDutyDates);
 					is_found: false,
 					match_type: "New" as Database["public"]["Enums"]["match_types"],
 					date: rawDuty.date,
-					//is_duty_period: false,
+					is_duty_period: false,
 				});
 			}
 		}
 
+		// 3. Find any current duties that were not found and update to not current
 		const oldDutyIds = [];
-
-		// 3. Update remaining current duties to not be current
 		for (const currentDuty of current_duty1) {
 			// Find the corresponding raw duty
 			const correspondingRawDuty = rawDuty2.find(
@@ -617,7 +604,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 					is_found: false,
 					match_type: "Delete" as Database["public"]["Enums"]["match_types"],
 					date: currentDuty.date,
-					//is_duty_period: false,
+					is_duty_period: false,
 				});
 
 				// write old duty ids ready to populate the roster
@@ -720,7 +707,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 			return dutyMatch;
 		});
 
-		// 7. Also add all 'New' records to the change log
+		// 7. Add 'New' duty records to the change log
 		dutyMatchesToInsert.forEach((dutyMatch) => {
 			if (dutyMatch.match_type === "New") {
 				changeLogToInsert.push({
@@ -745,7 +732,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 			}
 		});
 
-		// 8. Do the same for the change log
+		// 8. Add duty IDs to the change log for dutys that were updated
 		const completedChangeLogToInsert = changeLogToInsert.map((changeLog) => {
 			if (changeLog.change_code === "Update") {
 				const dutyId = dutyMatchesToInsert.find(
@@ -759,7 +746,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 			return changeLog;
 		});
 
-		// 10. Update the raw_duty records with the duty_id, writes to new array rawDutiesWithDutyIds
+		// 9. Update the raw_duty records with the duty_id, writes to new array rawDutiesWithDutyIds
 		const rawDutiesWithDutyIds = rawDuty2.map((rawDuty) => {
 			const dutyId = currentDuty2.find(
 				(duty) => duty.raw_duty_ids?.includes(rawDuty.raw_duty_id),
@@ -770,7 +757,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 			};
 		});
 
-		// 11. Upsert the raw_duty records into the database
+		// 10. Upsert the raw_duty records into the database
 		// NOTE: rawDuty3 has been skipped, we can change this later
 		const { data: rawDuty4, error: rawDuty4Error } = await supabase
 			.from("raw_duty")
@@ -784,10 +771,9 @@ console.log("Raw duty Standby:", standbyDutyDates);
 			console.error("Error upserting raw_duty:", rawDuty4Error);
 			throw rawDuty4Error;
 		}
+		console.log("Upserted raw_duty with duty_id:", rawDuty4);
 
-		console.log("Upserted raw_duty:", rawDuty4);
-
-		// 12. Update raw_duty_period with dutyIds
+		// 11. Update raw_duty_period with dutyIds
 		// Loop through rawDutyPeriodData and add the corresponding duty_ids matched by ecrew_duty_id to a new array
 		const rawDutyPeriodDataWithDutyIds = [];
 		for (const rawDutyPeriod of rawDutyPeriodWithRawIds) {
@@ -797,22 +783,21 @@ console.log("Raw duty Standby:", standbyDutyDates);
 			rawDutyPeriodDataWithDutyIds.push({
 				...rawDutyPeriod,
 				duty_ids: dutyIdsForPeriod.filter((id) => id !== null),
-				// TODO: This won't work for sector count as it could include standbys
-				//sectors: dutyIdsForPeriod.length, //hm new test
 			});
 		}
 
-		// 13. Upsert the raw_duty_period records that now have duty_ids into the database
+		// 12. Upsert the raw_duty_period records that now have duty_ids into the database
 		const {
 			data: rawDutyPeriodWithDutyIds,
 			error: rawDutyPeriodUpdateError,
 		} = await supabase
 			.from("raw_duty_period")
-			.upsert(rawDutyPeriodDataWithDutyIds, {
+			.upsert(rawDutyPeriodDataWithDutyIds, {      //KM this loads ok, dont understand error. all the fields are the same??!!
 				onConflict: "raw_duty_period_id",
 				ignoreDuplicates: false,
 			})
 			.select();
+
 
 		if (rawDutyPeriodUpdateError) {
 			console.error(
@@ -827,9 +812,8 @@ console.log("Raw duty Standby:", standbyDutyDates);
 			rawDutyPeriodWithDutyIds,
 		);
 
-		// 	---------------------------------------------------------
 
-		// 14. Insert the duty matches into the database
+		// 13. Insert the duty matches into the database
 		const { data: currentDutyMatch2, error: currentDutyMatch2Error } =
 			await supabase.from("duty_match").insert(dutyMatchesToInsert).select();
 
@@ -840,7 +824,7 @@ console.log("Raw duty Standby:", standbyDutyDates);
 
 		console.log("Inserted duty matches:", currentDutyMatch2);
 
-		// 15. Insert the change log into the database
+		// 14. Insert the change log into the database
 		const { data: changeLog2, error: changeLog2Error } = await supabase
 			.from("change_log")
 			.insert(completedChangeLogToInsert)
